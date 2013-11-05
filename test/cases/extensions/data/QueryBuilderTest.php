@@ -19,15 +19,16 @@ class QueryBuilderTest extends Unit {
 	}
 
 	public function testToDoesRespondToString() {
+		$this->skipIf(true, 'Our lithium does not have the new "assertNotException"');
 		$query = $this->query;
 		$this->assertNotException('InvalidArgumentException', function() use($query) {
 			$query->to('string');
-		}
+		});
 	}
 
 	public function testImportReturnsThis() {
 		$expected = 'li3_charizard\extensions\data\QueryBuilder';
-		$this->assertInstanceOf($expected, $query->import(array()));
+		$this->assertInstanceOf($expected, $this->query->import(array()));
 	}
 
 	public function testUrgentCareFacilitySearch() {
@@ -62,7 +63,7 @@ class QueryBuilderTest extends Unit {
 			'fl=facility_id,name&sort=geodist(geo,40.694599,-73.990638) asc,score desc&' +
 			'fq={!bbox pt=40.694599,-73.990638 sfield=geo d=10000}&' +
 			'defType=edismax';
-		$this->assertIdentical($expected, $query->import($data)->to('string'));
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
 	public function testDisorderAcSearch() {
@@ -106,7 +107,7 @@ class QueryBuilderTest extends Unit {
 			'group.cache.percent=0&' +
 			'group.truncate=true&' +
 			'group.facet=false';
-		$this->assertIdentical($expected, $query->import($data)->to('string'));
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
 	public function testLocationAcSearch() {
@@ -147,7 +148,7 @@ class QueryBuilderTest extends Unit {
 			'group.cache.percent=0&' +
 			'group.truncate=true&' +
 			'group.facet=false';
-		$this->assertIdentical($expected, $query->import($data)->to('string'));
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
 }
