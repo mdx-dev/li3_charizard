@@ -11,7 +11,7 @@ class QueryBuilder extends Object {
 
 	protected $_config = array();
 
-	protected $_autoConfig = array();
+	protected $_autoConfig = array('config', 'data');
 
 	public function __construct() {
 		parent::__construct();
