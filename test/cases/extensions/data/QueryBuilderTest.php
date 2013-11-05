@@ -65,6 +65,90 @@ class QueryBuilderTest extends Unit {
 		$this->assertIdentical($expected, $query->import($data)->to('string'));
 	}
 
+	public function testDisorderAcSearch() {
+		$data = array(
+			'suggestions' => array(
+				'typeahead_field' => 'disorder',
+				'typeahead_phrase' => 'Gas',
+			),
+			'related' => array(
+				array('field' => 'field_specialty_id'),
+				array('field' => 'disorder_id'),
+			),
+			'sort' => array(
+				array('score' => 'desc'),
+			),
+			'groupby' => array(
+				'disorder',
+			),
+			'rows' => 15,
+			'offset' => 0,
+		);
+		$expected = 'select?wt=json&' +
+			'q=( ( ( disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2 OR disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2)) OR disorder_autosuggest:Gas)&' +
+			'start=0&' +
+			'rows=15&' +
+			'fl=disorder,disorder_id,field_specialty_id,specialist_id,related_disorder_id,related_disorder,field_specialty,specialist,disorder_autosuggest&' +
+			'sort=score desc&' +
+			'defType=edismax&' +
+			'spellcheck=true&' +
+			'spellcheck.q=Gas&' +
+			'spellcheck.build=false&' +
+			'spellcheck.dictionary=disorderspellcheck&' +
+			'spellcheck.count=10&' +
+			'spellcheck.extendedResults=true&' +
+			'spellcheck.collate=true&' +
+			'spellcheck.collateExtendedResults=true&' +
+			'group=true&' +
+			'group.field=disorder&' +
+			'group.limit=1&' +
+			'group.ngroups=true&' +
+			'group.cache.percent=0&' +
+			'group.truncate=true&' +
+			'group.facet=false';
+		$this->assertIdentical($expected, $query->import($data)->to('string'));
+	}
+
+	public function testLocationAcSearch() {
+		$data = array(
+			'suggestions' => array(
+				'typeahead_field' => 'geo_zip_combo',
+				'typeahead_phrase' => 'Tul',
+			),
+			'related' => array(
+				array('field' => 'city'),
+				array('field' => 'state'),
+				array('field' => 'pop'),
+				array('field' => 'score'),
+			),
+			'sort' => array(
+				array('pop' => 'desc'),
+				array('score' => 'desc'),
+			),
+			'groupby' => array(
+				'city',
+				'state',
+			),
+			'rows' => 10,
+			'offset' => 0
+		);
+		$expected = 'select?wt=json&' +
+			'q=( ( ( state:Tul^10 OR city:Tul^10 OR zip:Tul^10 OR state_full:Tul^10 OR state:Tul^10 OR city:Tul^10 OR zip:Tul^10 OR state_full:Tul^10)) OR geo_zip_autosuggest:Tul)&' +
+			'start=0&' +
+			'rows=10&' +
+			'fl=geo_zip_combo,state,city,zip,state_full,geo,geo_cc,geo_zip_autosuggest&' +
+			'sort=pop desc,score desc&' +
+			'defType=edismax&' +
+			'group=true&' +
+			'group.field=city&' +
+			'group.field=state&' +
+			'group.limit=1&' +
+			'group.ngroups=true&' +
+			'group.cache.percent=0&' +
+			'group.truncate=true&' +
+			'group.facet=false';
+		$this->assertIdentical($expected, $query->import($data)->to('string'));
+	}
 
 }
 
