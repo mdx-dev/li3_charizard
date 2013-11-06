@@ -11,7 +11,11 @@ class QueryBuilder extends Object {
 
 	protected $_config = array();
 
-	protected $_autoConfig = array('config', 'data');
+	protected $_classes = array(
+		'builder' => 'li3_charizard\extensions\data\QueryPartToString',
+	);
+
+	protected $_autoConfig = array('config', 'data', 'classes');
 
 	public function __construct() {
 		parent::__construct();
@@ -30,7 +34,13 @@ class QueryBuilder extends Object {
 	}
 
 	public function __toString() {
-		return '';
+		$builder = $this->_classes['builder'];
+		$raw = array('select?wt=json');
+		foreach ($this->_data as $key => $value) {
+			$method = "{$key}ToString";
+			$raw[] = $builder::$method($value);
+		}
+		return implode('&', $raw);
 	}
 
 }

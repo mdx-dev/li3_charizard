@@ -59,7 +59,8 @@ class QueryBuilderTest extends Unit {
 			'q=name:Urgent&' .
 			'start=0&' .
 			'rows=10&' .
-			'fl=facility_id,name&sort=geodist(geo,40.694599,-73.990638) asc,score desc&' .
+			'fl=facility_id,name&' .
+			'sort=geodist(geo,40.694599,-73.990638) asc,score desc&' .
 			'fq={!bbox pt=40.694599,-73.990638 sfield=geo d=10000}&' .
 			'defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
