@@ -7,7 +7,6 @@ use li3_charizard\extensions\data\QueryStringBuilder;
 
 class QueryStringBuilderTest extends Unit {
 
-
 	public function testStart() {
 		$this->assertIdentical('start=10', QueryStringBuilder::startToString(10));
 	}
@@ -53,7 +52,6 @@ class QueryStringBuilderTest extends Unit {
 			' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
 			' OR alias_suffix:foo^1)';
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value));
-
 	}
 
 	public function testSortToStringWithMultipleArrayValues() {
