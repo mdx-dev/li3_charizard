@@ -33,6 +33,12 @@ class QueryStringBuilder extends StaticObject {
 		return 'sort=' . implode(', ', $values);
 	}
 
+	public static function groupByToString($values) {
+		return 'group=true&group.field='.implode('&group.field=', $values).
+			'&group.limit=1&group.ngroups=true&group.cache.percent=0&'.
+			'group.truncate=true&group.facet=false';
+	}
+
 	public static function __callStatic($method, $values) {
 		// Not yet implemented for debugging
 		// throw new BadMethodCallException("Method #{$method} not defined");

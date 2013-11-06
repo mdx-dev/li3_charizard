@@ -33,6 +33,16 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 
+  public function testGroupBy() {
+		$value = array(
+			'foo',
+			'bar'
+		);
+		$expected = 'group=true&group.field=foo&group.field=bar&group.limit=1'.
+			'&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false';
+		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
+	}
+
 	public function testSortToStringWithMultipleArrayValues() {
 		$value = array(
 			array('foo' => 'asc'),
