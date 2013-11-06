@@ -37,7 +37,6 @@ class QueryBuilder extends Object {
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
 		foreach ($this->_data as $key => $value) {
-
 			$method = "{$key}ToString";
 			$raw[] = $builder::$method($value);
 		}
