@@ -57,10 +57,10 @@ class QueryStringBuilder extends StaticObject {
 		//I really dislike combining fields like this.
 		//In the near future I want to create custom select handlers to handle
 		//each type of query so we can combine these fields into 1 field name.
-		$_geo_zip_combo = "(state:__VAL__^10 OR city:__VAL__^10 OR zip:__VAL__^10 OR state_full:__VAL__^10)";
-		$_disorder_combo = "(disorder_id:__VAL__^1 OR related_disorder:__VAL__^2 OR field_specialty:__VAL__^2 OR ".
+		$_geo_zip_combo = "((state:__VAL__^10 OR city:__VAL__^10 OR zip:__VAL__^10 OR state_full:__VAL__^10) OR geo_zip_autosuggest:__VAL__)";
+		$_disorder_combo = "((disorder_id:__VAL__^1 OR related_disorder:__VAL__^2 OR field_specialty:__VAL__^2 OR ".
 			"specialist:__VAL__^2 OR disorder_id:__VAL__^1 OR related_disorder:__VAL__^2 OR field_specialty:__VAL__^2 ".
-			"OR specialist:__VAL__^2)";
+			"OR specialist:__VAL__^2) OR disorder_autosuggest:__VAL__)";
 		$_name_combo = "name_autosuggest:__VAL__^0.1 OR (name_combo:__VAL__^2 OR first_name:__VAL__^5 OR middle_name:__VAL__^3".
 			" OR last_name:__VAL__^7 OR alias_first_name:__VAL__^1 OR alias_middle_name:__VAL__^2 OR alias_last_name:__VAL__^3 ".
 			"OR alias_suffix:__VAL__^1)";
