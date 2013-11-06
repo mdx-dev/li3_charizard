@@ -21,16 +21,16 @@ class QueryStringBuilder extends StaticObject {
 		return 'rows=' . $value;
 	}
 
-  public static function selectToString($values) {
-    foreach ($values as $key => &$value) {
-    	if($key ==  'display_name'){
-    		$value = self::ComboKeyValue($key, $value);
-    	}else{
-       $value = $key . ':' . $value;
-      }
-    }
-    return 'q=' . implode(' OR ', $values);
-  }
+	public static function selectToString($values) {
+		foreach ($values as $key => &$value) {
+			if($key ==  'display_name'){
+				$value = self::ComboKeyValue($key, $value);
+			}else{
+			 $value = $key . ':' . $value;
+			}
+		}
+		return 'q=' . implode(' OR ', $values);
+	}
 
 	public static function suggestionsToString($values){
 		return "q=". self::ComboKeyValue($values['typeahead_field'], $values['typeahead_phrase']);
@@ -64,6 +64,26 @@ class QueryStringBuilder extends StaticObject {
 		return '';
 	}
 
+	public static function geoToString($values){
+		if(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 1){
+			return "fq={!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+		}
+	}
+
+	public static function filterToString($values){
+		if($values){
+			foreach($values as $key => $value){
+				if($value){
+
+				}
+			}
+		}
+	}
+
+	public static function fieldsToString($values){
+		return 'fl=' . implode(',', $values);
+	}
+
 	/**
 	 * TODO Hardcoded hack, I want to use custom select handlers in solr instead
 	 * of using these combined fields.
@@ -82,7 +102,7 @@ class QueryStringBuilder extends StaticObject {
 			case 'geo_zip_combo':  $template = $_geo_zip_combo;  break;
 			case 'name_combo':
 			case 'display_name':
-						     						 $template = $_name_combo;     break;
+														 $template = $_name_combo;     break;
 			case 'disorder': 			 $template = $_disorder_combo; break;
 		}
 
