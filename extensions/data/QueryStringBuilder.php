@@ -5,7 +5,7 @@ namespace li3_charizard\extensions\data;
 use lithium\core\StaticObject;
 use BadMethodCallException;
 
-class QueryPartToString extends StaticObject {
+class QueryStringBuilder extends StaticObject {
 
 	public static function startToString($value) {
 		return 'start=' . $value;
@@ -31,6 +31,12 @@ class QueryPartToString extends StaticObject {
 			$value = $key . ' '. $value;
 		}
 		return 'sort=' . implode(', ', $values);
+	}
+
+	public static function groupByToString($values) {
+		return 'group=true&group.field='.implode('&group.field=', $values).
+			'&group.limit=1&group.ngroups=true&group.cache.percent=0&'.
+			'group.truncate=true&group.facet=false';
 	}
 
 	public static function __callStatic($method, $values) {

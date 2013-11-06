@@ -12,7 +12,7 @@ class QueryBuilder extends Object {
 	protected $_config = array();
 
 	protected $_classes = array(
-		'builder' => 'li3_charizard\extensions\data\QueryPartToString',
+		'builder' => 'li3_charizard\extensions\data\QueryStringBuilder',
 	);
 
 	protected $_autoConfig = array('config', 'data', 'classes');
