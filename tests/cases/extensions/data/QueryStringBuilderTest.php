@@ -1,6 +1,6 @@
 <?php
 
-namespace li3_charizard\test\cases\extensions\data;
+namespace li3_charizard\tests\cases\extensions\data;
 
 use lithium\test\Unit;
 use li3_charizard\extensions\data\QueryStringBuilder;
