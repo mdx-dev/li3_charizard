@@ -3,16 +3,16 @@
 namespace li3_charizard\test\cases\extensions\data;
 
 use lithium\test\Unit;
-use li3_charizard\extensions\data\QueryPartToString;
+use li3_charizard\extensions\data\QueryStringBuilder;
 
-class QueryPartToStringTest extends Unit {
+class QueryStringBuilderTest extends Unit {
 
 	public function testStart() {
-		$this->assertIdentical('start=10', QueryPartToString::startToString(10));
+		$this->assertIdentical('start=10', QueryStringBuilder::startToString(10));
 	}
 
 	public function testRows() {
-		$this->assertIdentical('rows=10', QueryPartToString::rowsToString(10));
+		$this->assertIdentical('rows=10', QueryStringBuilder::rowsToString(10));
 	}
 
 	public function testSelect() {
@@ -21,7 +21,7 @@ class QueryPartToStringTest extends Unit {
 			'baz' => 'qux',
 		);
 		$expected = 'q=foo:bar OR baz:qux';
-		$this->assertIdentical($expected, QueryPartToString::selectToString($value));
+		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
 	public function testSortToStringSimple() {
@@ -30,7 +30,7 @@ class QueryPartToStringTest extends Unit {
 			'baz' => 'desc',
 		);
 		$expected = 'sort=foo asc, baz desc';
-		$this->assertIdentical($expected, QueryPartToString::sortToString($value));
+		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 
 	public function testSortToStringWithMultipleArrayValues() {
@@ -39,7 +39,7 @@ class QueryPartToStringTest extends Unit {
 			array('baz' => 'desc'),
 		);
 		$expected = 'sort=foo asc, baz desc';
-		$this->assertIdentical($expected, QueryPartToString::sortToString($value));
+		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 }
 

@@ -5,7 +5,7 @@ namespace li3_charizard\extensions\data;
 use lithium\core\StaticObject;
 use BadMethodCallException;
 
-class QueryPartToString extends StaticObject {
+class QueryStringBuilder extends StaticObject {
 
 	public static function startToString($value) {
 		return 'start=' . $value;
