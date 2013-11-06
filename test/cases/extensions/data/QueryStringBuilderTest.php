@@ -33,7 +33,7 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 
-  public function testGroupBy() {
+	public function testGroupBy() {
 		$value = array(
 			'foo',
 			'bar',
@@ -41,6 +41,27 @@ class QueryStringBuilderTest extends Unit {
 		$expected = 'group=true&group.field=foo&group.field=bar&group.limit=1'.
 			'&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false';
 		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
+	}
+
+	public function testFieldToStringSimple() {
+		$value = array(
+			'foo',
+			'bar',
+			'baz',
+		);
+		$expected = 'fl=foo,bar,baz';
+		$this->assertIdentical($expected, QueryStringBuilder::fieldsToString($value));
+	}
+
+	public function testGeoToStringBBoxSimple() {
+		$value = array(
+			'_distance_sort' => 1,
+			'field' => 'foo',
+			'latlong' => '36.1537,-95.9926',
+			'radius' => 19,
+		);
+		$expected = 'fq={!bbox pt=36.1537,-95.9926 sfield=foo d=19}';
+		$this->assertIdentical($expected, QueryStringBuilder::geoToString($value));
 	}
 
 	public function testSuggestions() {

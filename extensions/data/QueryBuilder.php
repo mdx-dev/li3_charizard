@@ -37,11 +37,15 @@ class QueryBuilder extends Object {
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
 		foreach ($this->_data as $key => $value) {
-			
+
 			$method = "{$key}ToString";
 			$raw[] = $builder::$method($value);
 		}
-		return implode('&', $raw);
+		$queryString = implode('&', $raw);
+		$queryString = str_replace('&&', '&', $queryString); // replace && with &
+		$queryString = trim($queryString, '&'); //remove trailing or opening &
+
+		return $queryString;
 	}
 
 }

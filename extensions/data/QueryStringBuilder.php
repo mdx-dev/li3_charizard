@@ -64,6 +64,26 @@ class QueryStringBuilder extends StaticObject {
 		return '';
 	}
 
+	public static function geoToString($values){
+		if(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 1){
+			return "fq={!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+		}
+	}
+
+	public static function filterToString($values){
+		if($values){
+			foreach($values as $key => $value){
+				if($value){
+
+				}
+			}
+		}
+	}
+
+	public static function fieldsToString($values){
+		return 'fl=' . implode(',', $values);
+	}
+
 	/**
 	 * TODO Hardcoded hack, I want to use custom select handlers in solr instead
 	 * of using these combined fields.
@@ -83,7 +103,7 @@ class QueryStringBuilder extends StaticObject {
 				break;
 			case 'name_combo':
 			case 'display_name':
-				$template = $_name_combo;
+				$template = $_name_combo;     break;
 				break;
 			case 'disorder':
 				$template = $_disorder_combo;
