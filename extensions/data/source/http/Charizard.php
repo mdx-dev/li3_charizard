@@ -24,15 +24,22 @@ class Charizard extends Source {
 		parent::__construct($config + $defaults);
 	}
 
+	/**
+	 * TODO
+	 *
+	 * {{{
+	 * $self->connection->post($path, $querystring, $options);
+	 * }}}
+	 *
+	 * @param mixed $query
+	 * @param array $options
+	 */
 	public function read($query, array $options = array()) {
 		$_config = $this->_config;
 		$params = compact('query', 'options', '_config');
 		return $this->_filter(__METHOD__, $params, function($self, $params) {
-			// stuff here!
-			// $self->connection->get($path, $querystring, $options);
-			// $self->connection->post($path, $querystring, $options);
 			return $self->item($query->model(), $data, array('class' => 'set'));
-		}
+		});
 	}
 
 }

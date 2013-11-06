@@ -1,6 +1,6 @@
 <?php
 
-namespace li3_charizard\test\cases\extensions\data;
+namespace li3_charizard\tests\cases\extensions\data;
 
 use lithium\test\Unit;
 use li3_charizard\extensions\data\QueryBuilder;
@@ -19,7 +19,6 @@ class QueryBuilderTest extends Unit {
 	}
 
 	public function testToDoesRespondToString() {
-		$this->skipIf(true, 'Our lithium does not have the new "assertNotException"');
 		$query = $this->query;
 		$this->assertNotException('InvalidArgumentException', function() use($query) {
 			$query->to('string');

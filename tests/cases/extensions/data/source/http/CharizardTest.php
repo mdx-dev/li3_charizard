@@ -1,6 +1,6 @@
 <?php
 
-namespace li3_charizard\test\cases\extensions\data\source\http;
+namespace li3_charizard\tests\cases\extensions\data\source\http;
 
 use lithium\test\Unit;
 
