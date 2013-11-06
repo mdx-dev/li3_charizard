@@ -36,7 +36,7 @@ class QueryStringBuilderTest extends Unit {
   public function testGroupBy() {
 		$value = array(
 			'foo',
-			'bar'
+			'bar',
 		);
 		$expected = 'group=true&group.field=foo&group.field=bar&group.limit=1'.
 			'&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false';
@@ -45,8 +45,9 @@ class QueryStringBuilderTest extends Unit {
 
 	public function testSuggestions() {
 		$value = array(
-			"typeahead_field" => "display_name",
-			"typeahead_phrase"=>"foo");
+			'typeahead_field' => 'display_name',
+			'typeahead_phrase' => 'foo',
+		);
 
 		$expected = 'q=name_autosuggest:foo^0.1 OR (name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
 			' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
