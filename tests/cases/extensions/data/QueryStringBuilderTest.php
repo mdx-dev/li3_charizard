@@ -91,6 +91,7 @@ class QueryStringBuilderTest extends Unit {
 
 	public function testRelatedToString() {
 		$this->skipIf(true, 'We have not discovered what this field does.');
+	}
 
 	public function testGeoToString() {
 		$this->skipIf(true, 'Method has hardcoded values.');
@@ -109,6 +110,16 @@ class QueryStringBuilderTest extends Unit {
 	public function testEmptyFieldsToString() {
 		$expected = 'fl=';
 		$result = QueryStringBuilder::fieldsToString(array());
+		$this->assertIdentical($expected, $result);
+	}
+
+	public function testSortByGeo() {
+		$values = array(
+			'geodist(geo,36.1537,-95.9926)' => 'asc',
+			'score' => 'desc',
+		);
+		$expected = 'sort=geodist(geo,36.1537,-95.9926) asc, score desc';
+		$result = QueryStringBuilder::sortToString($values);
 		$this->assertIdentical($expected, $result);
 	}
 
