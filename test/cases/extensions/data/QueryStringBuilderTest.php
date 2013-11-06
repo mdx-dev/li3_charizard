@@ -11,6 +11,10 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical('start=10', QueryStringBuilder::startToString(10));
 	}
 
+	public function testEmptyStartToString() {
+		$this->assertEmpty(QueryStringBuilder::startToString(0));
+	}
+
 	public function testRows() {
 		$this->assertIdentical('rows=10', QueryStringBuilder::rowsToString(10));
 	}
@@ -84,6 +88,30 @@ class QueryStringBuilderTest extends Unit {
 		$expected = 'sort=foo asc, baz desc';
 		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
+
+	public function testRelatedToString() {
+		$this->skipIf(true, 'We have not discovered what this field does.');
+
+	public function testGeoToString() {
+		$this->skipIf(true, 'Method has hardcoded values.');
+	}
+
+	public function testFilterToString() {
+		$this->skipIf(true, 'Method has not yet been implemented');
+	}
+
+	public function testFieldsToStringSimple() {
+		$expected = 'fl=foo,bar';
+		$result = QueryStringBuilder::fieldsToString(array('foo', 'bar'));
+		$this->assertIdentical($expected, $result);
+	}
+
+	public function testEmptyFieldsToString() {
+		$expected = 'fl=';
+		$result = QueryStringBuilder::fieldsToString(array());
+		$this->assertIdentical($expected, $result);
+	}
+
 }
 
 ?>
