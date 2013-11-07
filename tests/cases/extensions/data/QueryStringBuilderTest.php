@@ -42,8 +42,14 @@ class QueryStringBuilderTest extends Unit {
 			'foo',
 			'bar',
 		);
-		$expected = 'group=true&group.field=foo&group.field=bar&group.limit=1'.
-			'&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false';
+		$expected = 'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=foo&' .
+			'group.field=bar';
 		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
 	}
 
@@ -91,6 +97,7 @@ class QueryStringBuilderTest extends Unit {
 
 	public function testRelatedToString() {
 		$this->skipIf(true, 'We have not discovered what this field does.');
+	}
 
 	public function testGeoToString() {
 		$this->skipIf(true, 'Method has hardcoded values.');
@@ -109,6 +116,16 @@ class QueryStringBuilderTest extends Unit {
 	public function testEmptyFieldsToString() {
 		$expected = 'fl=';
 		$result = QueryStringBuilder::fieldsToString(array());
+		$this->assertIdentical($expected, $result);
+	}
+
+	public function testSortByGeo() {
+		$values = array(
+			'geodist(geo,36.1537,-95.9926)' => 'asc',
+			'score' => 'desc',
+		);
+		$expected = 'sort=geodist(geo,36.1537,-95.9926) asc, score desc';
+		$result = QueryStringBuilder::sortToString($values);
 		$this->assertIdentical($expected, $result);
 	}
 
