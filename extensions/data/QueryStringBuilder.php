@@ -50,9 +50,18 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function groupByToString($values) {
-		return 'group=true&group.field=' . implode('&group.field=', $values) .
-			'&group.limit=1&group.ngroups=true&group.cache.percent=0&' .
-			'group.truncate=true&group.facet=false';
+		$items = array(
+			'group=true',
+			'group.limit=1',
+			'group.ngroups=true',
+			'group.cache.percent=0',
+			'group.truncate=true',
+			'group.facet=false',
+		);
+		foreach ($values as $value) {
+			$items[] = 'group.field=' . $value;
+		}
+		return implode('&', $items);
 	}
 
 	/**

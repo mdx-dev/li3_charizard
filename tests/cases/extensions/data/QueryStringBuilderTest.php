@@ -42,8 +42,14 @@ class QueryStringBuilderTest extends Unit {
 			'foo',
 			'bar',
 		);
-		$expected = 'group=true&group.field=foo&group.field=bar&group.limit=1'.
-			'&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false';
+		$expected = 'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=foo&' .
+			'group.field=bar';
 		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
 	}
 
