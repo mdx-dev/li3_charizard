@@ -112,7 +112,7 @@ class QueryStringBuilder extends StaticObject {
 	 * @param string $config
 	 */
 	public static function comboKeyValue($key, $value, array $config = array()) {
-		if (empty($config['str_fields'][$key])) {
+		if (empty($config['str_fields'][$key]['related'])) {
 			return '';
 		}
 		$related = $config['str_fields'][$key]['related'];
@@ -124,6 +124,9 @@ class QueryStringBuilder extends StaticObject {
 			$relatedArray[] = $relField['field'] . ':' . $value . '^' . $relField['boost'];
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
+		if (empty($config['str_fields'][$key]['ifnix'])) {
+			return '(' . $relatedDate . ')';
+		}
 		$infix = $config['str_fields'][$key]['infix'];
 		$infixData = ' OR ' . $infix['field'] . ':' . $value;
 		return '((' . $relatedData . ')' . $infixData . ')';
