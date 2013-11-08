@@ -79,11 +79,134 @@ class QueryStringBuilderTest extends Unit {
 			'typeahead_field' => 'display_name',
 			'typeahead_phrase' => 'foo',
 		);
-
-		$expected = 'q=name_autosuggest:foo^0.1 OR (name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
+		$config = array(
+			'str_fields' => array(
+				"display_name" => array(
+					"id_field" => "master_id",
+					"related" => array(
+						array(
+							"field" => "name_combo",
+							"boost" => 2,
+							"append" => true
+						),
+						array(
+							"field" => "first_name",
+							"boost" => 5,
+							"append" => true
+						),
+						array(
+							"field" => "middle_name",
+							"boost" => 3,
+							"append" => true
+						),
+						array(
+							"field" => "last_name",
+							"boost" => 7,
+							"append" => true
+						),
+						array(
+							"field" => "alias_first_name",
+							"boost" => 1,
+							"append" => true
+						),
+						array(
+							"field" => "alias_middle_name",
+							"boost" => 2,
+							"append" => true
+						),
+						array(
+							"field" => "alias_last_name",
+							"boost" => 3,
+							"append" => true
+						),
+						array(
+							"field" => "alias_suffix",
+							"boost" => 1,
+							"append" => true
+						)
+					),
+					"spell" => array(
+						"field" => "name_spell",
+						"boost" => 0.1,
+						"append" => true,
+						"dictionary" => "namespellcheck"
+					),
+					"autosuggest" => array(
+						"dictionary" => "nametypeahead",
+						"field" => "name_autosuggest",
+						"boost" => 0.1,
+						"append" => true
+					),
+					"infix" => array(
+						"field" => "name_autosuggest",
+						"boost" => 0.1,
+						"append" => true
+					)
+				),
+			),
+		);
+		$expected = 'q=((name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
 			' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
-			' OR alias_suffix:foo^1)';
-		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value));
+			' OR alias_suffix:foo^1) OR name_autosuggest:foo^0.1)';
+		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
+	}
+
+
+	/**
+	 * TODO I added a boost to 'geo_zip_autosuggest' even though nothing was returned.
+	 * This did not appear to change results and was different from the test above here.
+	 */
+	public function testGeoSuggestions() {
+		$value = array(
+			'typeahead_field' => 'geo_zip_combo',
+			'typeahead_phrase' => 'Tul',
+		);
+		$config = array(
+			'str_fields' => array(
+				"geo_zip_combo" => array(
+					"id_field" => "id",
+					"related" => array(
+						array(
+							"field" => "state",
+							"boost" => 4,
+							"append" => true,
+						),
+						array(
+							"field" => "city",
+							"boost" => 5,
+							"append" => true,
+						),
+						array(
+							"field" => "zip",
+							"boost" => 3,
+							"append" => true,
+						),
+						array(
+							"field" => "state_full",
+							"boost" => 3,
+							"append" => true,
+						),
+						array(
+							"field" => "geo",
+							"boost" => 1,
+							"append" => false,
+						),
+						array(
+							"field" => "geo_cc",
+							"boost" => 1,
+							"append" => false,
+						),
+					),
+					"infix" => array(
+						"field" => "geo_zip_autosuggest",
+						"boost" => 0.5,
+						"append" => true,
+					),
+				),
+			),
+		);
+		$expected = 'q=((state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3) OR geo_zip_autosuggest:Tul^0.5)';
+		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
 	public function testSortToStringWithMultipleArrayValues() {
