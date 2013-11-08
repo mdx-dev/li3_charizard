@@ -14,7 +14,7 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function offsetToString($value) {
-		return self::startToString($value);
+		return static::startToString($value);
 	}
 
 	public static function rowsToString($value) {
@@ -24,7 +24,7 @@ class QueryStringBuilder extends StaticObject {
 	public static function selectToString($values) {
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
-				$value = self::comboKeyValue($key, $value);
+				$value = static::comboKeyValue($key, $value);
 			} else {
 				$value = $key . ':' . $value;
 			}
@@ -35,7 +35,7 @@ class QueryStringBuilder extends StaticObject {
 	public static function suggestionsToString($values, array $config = array()) {
 		$field = $values['typeahead_field'];
 		$phrase = $values['typeahead_phrase'];
-		return 'q=' . self::comboKeyValue($field, $phrase, $config);
+		return 'q=' . static::comboKeyValue($field, $phrase, $config);
 	}
 
 	public static function sortToString($values) {
@@ -112,7 +112,7 @@ class QueryStringBuilder extends StaticObject {
 	 * @param string $config
 	 */
 	public static function comboKeyValue($key, $value, array $config = array()) {
-		if (empty($config['str_fields'][$key])) {
+		if (empty($config['str_fields'][$key]['related'])) {
 			return '';
 		}
 		$related = $config['str_fields'][$key]['related'];
@@ -124,8 +124,11 @@ class QueryStringBuilder extends StaticObject {
 			$relatedArray[] = $relField['field'] . ':' . $value . '^' . $relField['boost'];
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
+		if (empty($config['str_fields'][$key]['infix'])) {
+			return '(' . $relatedData . ')';
+		}
 		$infix = $config['str_fields'][$key]['infix'];
-		$infixData = ' OR ' . $infix['field'] . ':' . $value;
+		$infixData = ' OR ' . $infix['field'] . ':' . $value . '^' . $infix['boost'];
 		return '((' . $relatedData . ')' . $infixData . ')';
 	}
 
