@@ -347,10 +347,6 @@ class QueryBuilderTest extends Unit {
 			'sort' => array(
 				'random_1383842845' => 'asc',
 			),
-			'boost' => array(
-				'display_name' => 0.9,
-				'expertise' => 0.8,
-			),
 			'groupby' => array(
 				'master_id',
 			),
@@ -363,22 +359,19 @@ class QueryBuilderTest extends Unit {
 			'rows' => 6,
 			'offset' => 0,
 		);
-		$expected = 'select?wt=json' .
-			'q=specialist_id:124 AND  standing_code:P AND  -provider_id:13539396' .
-			'start=0' .
-			'rows=6' .
-			'fl=score,provider_id,master_id,geo,provider_practice_id,specialist_id,standing_code' .
-			'sort=random_1383842845 asc' .
-			'fq={!bbox pt=40.6689264,-73.9797357 sfield=geo d=48.28032}' .
-			'fq={!tag=provider_type_id}provider_type_id:1' .
-			'defType=edismax' .
-			'group=true' .
-			'group.field=master_id' .
-			'group.limit=1' .
-			'group.ngroups=true' .
-			'group.cache.percent=0' .
-			'group.truncate=true' .
-			'group.facet=false';
+		$expected = 'select?wt=json&' .
+			'q=specialist_id:124 AND standing_code:P AND -provider_id:13539396&fl=score,provider_id,master_id,geo,provider_practice_id&' .
+			'fq={!tag=provider_type_id}provider_type_id:1&' .
+			'sort=random_1383842845 asc&' .
+			'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=master_id&' .
+			'fq={!bbox pt=40.6689264,-73.9797357 sfield=geo d=48.28032}&' .
+			'rows=6';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 

@@ -25,7 +25,7 @@ class QueryStringBuilder extends StaticObject {
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
 				$value = static::comboKeyValue($key, $value);
-			} elseif(!empty($value)) {
+			} elseif ($value !== '') {
 				$value = $key . ':' . $value;
 			}
 		}
