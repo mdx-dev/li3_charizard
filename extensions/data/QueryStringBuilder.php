@@ -46,7 +46,7 @@ class QueryStringBuilder extends StaticObject {
 				$key = key($value);
 				$value = $value[$key];
 			}
-			if($key == '_distance_sort'){  
+			if($key == '_distance_sort'){
 				//I think this value should be changed to 'score' in the model not here
 				$value = 'score ' . $value;
 			}else{
@@ -115,6 +115,36 @@ class QueryStringBuilder extends StaticObject {
 
 
 	public static function facetToString($values){
+		if($values){
+			if($values['field']){
+				$facetFields = array();
+				foreach($values['field'] as $key => $value){
+					$facetFields[] = "{!key={$key}}{$value}";
+				}
+			}
+			if($values['range']){
+				$facetRanges = array();
+				foreach($values['range'] as $range){
+					$rangeName = $range['field'];
+					$string = "facet.range={!key={$range['field']}}{$rangeName}";
+					foreach ($range as $key => $value) {
+						if($key != 'field' && isset($value)){
+							$string .= "&f.{$rangeName}.facet.range.{$key}={$value}";
+						}
+					}
+					$facetRanges[] = $string;
+				}
+			}
+			if($facetFields || $facetRanges){
+				return 'facet=true' . ($facetFields ? '&'. implode('&', $facetFields) : '').
+					($facetRanges ? '&'. implode('&', $facetRanges) : '');
+			}
+		}
+	}
+
+	public static function boostToString($values){
+		//boosts don't seem to be used in any of the current vitals queries,
+		// maybe remove from models instead of here?
 		return '';
 	}
 
@@ -126,6 +156,9 @@ class QueryStringBuilder extends StaticObject {
 	 * @param string $config
 	 */
 	public static function comboKeyValue($key, $value, array $config = array()) {
+		echo "<pre>";
+		print_r($config);
+		echo "</pre>";		
 		if (empty($config['str_fields'][$key])) {
 			return '';
 		}

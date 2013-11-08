@@ -26,6 +26,11 @@ class QueryBuilder extends Object {
 		return $this;
 	}
 
+	public function config($fields) {
+		$this->_config = $fields;
+		return $this;
+	}
+
 	public function to($type) {
 		if ($type === 'string') {
 			return $this->__toString();
@@ -34,11 +39,19 @@ class QueryBuilder extends Object {
 	}
 
 	public function __toString() {
+
+		echo "<pre>";
+		print_r($this);
+		echo "</pre>";
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
 		foreach ($this->_data as $key => $value) {
 			$method = "{$key}ToString";
-			$raw[] = $builder::$method($value);
+			if($method == 'suggestionsToString'){
+				$raw[] = $builder::$method($value, $this->_config);
+			}else{
+				$raw[] = $builder::$method($value);
+			}
 		}
 		//$queryString = implode('&', $raw);
 		$queryString = self::validate(implode('&', $raw));
