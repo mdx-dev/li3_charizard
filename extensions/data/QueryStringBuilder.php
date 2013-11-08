@@ -27,7 +27,7 @@ class QueryStringBuilder extends StaticObject {
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
 				$value = static::comboKeyValue($key, $value);
-			} elseif ($value !== '') {
+			} elseif ($value !== '' && !is_null($value)) {
 				$value = $key . ':' . $value;
 			}
 		}
@@ -99,21 +99,21 @@ class QueryStringBuilder extends StaticObject {
 		}
 	}
 
+
+	/**
+	 * TODO why are we using `!tag=`?
+	 */
 	public static function filterToString($values){
-		if($values){
-			$filterFields = array();
-			if($values['field']){
-				foreach($values['field'] as $key => $value){
-					if($value){
-						//why are we using {!tag=} here?
-						$filterFields[] = "fq={!tag={$key}}{$key}:{$value}";
-					}
-				}
-			}
-			if($filterFields){
-				return '&' . implode('&', $filterFields);
+		if (empty($values['field'])) {
+			return;
+		}
+		$filterFields = array();
+		foreach ($values['field'] as $key => $value) {
+			if ($value) {
+				$filterFields[] = "fq={!tag={$key}}{$key}:{$value}";
 			}
 		}
+		return implode('&', $filterFields);
 	}
 
 	public static function fieldsToString($values){

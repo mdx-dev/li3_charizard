@@ -28,6 +28,15 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
+	public function testSelectWithEmptyStringValue() {
+		$value = array(
+			'foo' => 'bar',
+			'baz' => '',
+		);
+		$expected = 'q=foo:bar';
+		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
+	}
+
 	public function testSelectWithNullValue() {
 		$value = array(
 			'foo' => 'bar',
