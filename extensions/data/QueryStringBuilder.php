@@ -165,14 +165,21 @@ class QueryStringBuilder extends StaticObject {
 			if (!$relField['append']) {
 				continue;
 			}
-			$relatedArray[] = $relField['field'] . ':' . $value . '^' . $relField['boost'];
+			$relData = $relField['field'] . ':' . $value;
+			if (!empty($relField['boost'])) {
+				$relData .= '^' . $relField['boost'];
+			}
+			$relatedArray[] = $relData;
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
 		if (empty($config['str_fields'][$key]['infix'])) {
 			return '(' . $relatedData . ')';
 		}
 		$infix = $config['str_fields'][$key]['infix'];
-		$infixData = ' OR ' . $infix['field'] . ':' . $value . '^' . $infix['boost'];
+		$infixData = ' OR ' . $infix['field'] . ':' . $value;
+		if (!empty($infix['boost'])) {
+			$infixData .= '^' . $infix['boost'];
+		}
 		return '((' . $relatedData . ')' . $infixData . ')';
 	}
 

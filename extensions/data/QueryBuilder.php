@@ -9,17 +9,15 @@ class QueryBuilder extends Object {
 
 	protected $_data = array();
 
+	protected $_modelConfig = array();
+
 	protected $_config = array();
 
 	protected $_classes = array(
 		'builder' => 'li3_charizard\extensions\data\QueryStringBuilder',
 	);
 
-	protected $_autoConfig = array('config', 'data', 'classes');
-
-	public function __construct() {
-		parent::__construct();
-	}
+	protected $_autoConfig = array('config', 'data', 'classes', 'modelConfig');
 
 	public function import($fields) {
 		$this->_data = $fields;
@@ -47,11 +45,7 @@ class QueryBuilder extends Object {
 		$raw = array('select?wt=json');
 		foreach ($this->_data as $key => $value) {
 			$method = "{$key}ToString";
-			if($method == 'suggestionsToString'){
-				$raw[] = $builder::$method($value, $this->_config);
-			}else{
-				$raw[] = $builder::$method($value);
-			}
+			$raw[] = $builder::$method($value, $this->_modelConfig);
 		}
 		//$queryString = implode('&', $raw);
 		$queryString = self::validate(implode('&', $raw));
