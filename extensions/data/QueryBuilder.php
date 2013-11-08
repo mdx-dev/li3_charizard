@@ -38,9 +38,32 @@ class QueryBuilder extends Object {
 			$method = "{$key}ToString";
 			$raw[] = $builder::$method($value, $this->_modelConfig);
 		}
-		$queryString = implode('&', $raw);
-		$queryString = str_replace('&&', '&', $queryString); // replace && with &
-		$queryString = trim($queryString, '&'); //remove trailing or opening &
+		return static::validate(implode('&', $raw));
+	}
+
+	public function validate($queryString){
+		//there can not be more than 1 q
+		if(substr_count($queryString, "&q=") > 1){
+			preg_match_all("/&q=(.*?)&/", $queryString, $qStrings);
+			$qStrings = $qStrings[0];
+			for($x=0; $x<count($qStrings); $x++){
+				$queryString = preg_replace("/&q=(.*?)&/", "__STRING{$x}__", $queryString, 1);
+			}
+			$i=1;
+			foreach ($qStrings as $string) {
+				if(substr_count($string, "{!geofilt") > 0)   {
+					$queryString = str_replace('__STRING0__', $string, $queryString);
+				}else{
+					$queryString = str_replace('__STRING' . $i++ . '__', str_replace('&q=', '&fq=', $string), $queryString);
+				}
+			}
+		}
+		// replace && with &
+		while(substr_count($queryString, '&&') > 0){
+			$queryString = str_replace('&&', '&', $queryString);
+		}
+		//remove trailing or opening &
+		$queryString = trim($queryString, '&');
 
 		return $queryString;
 	}
