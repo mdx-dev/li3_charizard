@@ -124,11 +124,11 @@ class QueryStringBuilder extends StaticObject {
 			$relatedArray[] = $relField['field'] . ':' . $value . '^' . $relField['boost'];
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
-		if (empty($config['str_fields'][$key]['ifnix'])) {
-			return '(' . $relatedDate . ')';
+		if (empty($config['str_fields'][$key]['infix'])) {
+			return '(' . $relatedData . ')';
 		}
 		$infix = $config['str_fields'][$key]['infix'];
-		$infixData = ' OR ' . $infix['field'] . ':' . $value;
+		$infixData = ' OR ' . $infix['field'] . ':' . $value . '^' . $infix['boost'];
 		return '((' . $relatedData . ')' . $infixData . ')';
 	}
 
