@@ -151,7 +151,6 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
-
 	/**
 	 * TODO I added a boost to 'geo_zip_autosuggest' even though nothing was returned.
 	 * This did not appear to change results and was different from the test above here.
@@ -206,6 +205,54 @@ class QueryStringBuilderTest extends Unit {
 			),
 		);
 		$expected = 'q=((state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3) OR geo_zip_autosuggest:Tul^0.5)';
+		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
+	}
+
+	public function testSuggestionsWIthoutInfix() {
+		$value = array(
+			'typeahead_field' => 'geo_zip_combo',
+			'typeahead_phrase' => 'Tul',
+		);
+		$config = array(
+			'str_fields' => array(
+				"geo_zip_combo" => array(
+					"id_field" => "id",
+					"related" => array(
+						array(
+							"field" => "state",
+							"boost" => 4,
+							"append" => true,
+						),
+						array(
+							"field" => "city",
+							"boost" => 5,
+							"append" => true,
+						),
+						array(
+							"field" => "zip",
+							"boost" => 3,
+							"append" => true,
+						),
+						array(
+							"field" => "state_full",
+							"boost" => 3,
+							"append" => true,
+						),
+						array(
+							"field" => "geo",
+							"boost" => 1,
+							"append" => false,
+						),
+						array(
+							"field" => "geo_cc",
+							"boost" => 1,
+							"append" => false,
+						),
+					),
+				),
+			),
+		);
+		$expected = 'q=(state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3)';
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
