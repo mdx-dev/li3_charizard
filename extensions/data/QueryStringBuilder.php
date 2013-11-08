@@ -14,7 +14,9 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function offsetToString($value) {
-		return self::startToString($value);
+		if ($value > 0) {
+			return 'group.offset='. $value;
+		}
 	}
 
 	public static function rowsToString($value) {
@@ -44,7 +46,12 @@ class QueryStringBuilder extends StaticObject {
 				$key = key($value);
 				$value = $value[$key];
 			}
-			$value = $key . ' ' . $value;
+			if($key == '_distance_sort'){  
+				//I think this value should be changed to 'score' in the model not here
+				$value = 'score ' . $value;
+			}else{
+				$value = $key . ' ' . $value;
+			}
 		}
 		return 'sort=' . implode(', ', $values);
 	}
@@ -87,6 +94,8 @@ class QueryStringBuilder extends StaticObject {
 	public static function geoToString($values){
 		if(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 1){
 			return "fq={!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+		}elseif(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 'hash'){
+			return "q={!geofilt score=distance filter=true pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
 		}
 	}
 
@@ -102,6 +111,11 @@ class QueryStringBuilder extends StaticObject {
 
 	public static function fieldsToString($values){
 		return 'fl=' . implode(',', $values);
+	}
+
+
+	public static function facetToString($values){
+		return '';
 	}
 
 	/**
