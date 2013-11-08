@@ -27,11 +27,11 @@ class QueryStringBuilder extends StaticObject {
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
 				$value = static::comboKeyValue($key, $value);
-			} else {
+			} elseif ($value !== '') {
 				$value = $key . ':' . $value;
 			}
 		}
-		return 'q=' . implode(' OR ', $values);
+		return 'q=' . implode(' AND ', array_filter($values));
 	}
 
 	public static function suggestionsToString($values, array $config = array()) {

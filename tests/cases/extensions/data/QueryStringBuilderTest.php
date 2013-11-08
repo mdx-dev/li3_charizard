@@ -24,7 +24,16 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'bar',
 			'baz' => 'qux',
 		);
-		$expected = 'q=foo:bar OR baz:qux';
+		$expected = 'q=foo:bar AND baz:qux';
+		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
+	}
+
+	public function testSelectWithNullValue() {
+		$value = array(
+			'foo' => 'bar',
+			'baz' => null,
+		);
+		$expected = 'q=foo:bar';
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
@@ -299,6 +308,29 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, $result);
 	}
 
+	public function testBasicFieldFilter() {
+		$values = array(
+			'field' => array(
+				'provider_type_id' => 1,
+			),
+		);
+		$expected = 'fq={!tag=provider_type_id}provider_type_id:1';
+		$result = QueryStringBuilder::filterToString($values);
+		$this->assertIdentical($expected, $result);
+	}
+
+	public function testDoubleFieldFilter() {
+		$values = array(
+			'field' => array(
+				'provider_type_id' => 1,
+				'practice_id' => 2,
+			),
+		);
+		$expected = 'fq={!tag=provider_type_id}provider_type_id:1&' .
+			'fq={!tag=practice_id}practice_id:2';
+		$result = QueryStringBuilder::filterToString($values);
+		$this->assertIdentical($expected, $result);
+	}
 }
 
 ?>
