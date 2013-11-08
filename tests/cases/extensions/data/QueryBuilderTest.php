@@ -384,124 +384,149 @@ class QueryBuilderTest extends Unit {
 
 	public function testProviderAutoComplete() {
 		$data = array(
-			'suggestions' => array(
-				'typeahead_field' => 'name_combo',
-				'typeahead_phrase' => 'Todd',
-				'related' => array(
-					array(
-						'field' => 'display_name',
-					),
-					array(
-						'field' => 'specialist',
-					),
-					array(
-						'field' => 'gender',
-					),
-					array(
-						'field' => 'city',
-					),
-					array(
-						'field' => 'state',
-					),
-					array(
-						'field' => 'provider_type_id',
-					),
-					array(
-						'field' => 'degree',
-					),
-					array(
-						'field' => 'provider_id',
-					),
-					array(
-						'field' => 'average_ratings',
-					),
-					array(
-						'field' => 'master_name',
+			'data' => array(
+				'suggestions' => array(
+					'typeahead_field' => 'name_combo',
+					'typeahead_phrase' => 'Todd',
+					'related' => array(
+						array(
+							'field' => 'display_name',
+						),
+						array(
+							'field' => 'specialist',
+						),
+						array(
+							'field' => 'gender',
+						),
+						array(
+							'field' => 'city',
+						),
+						array(
+							'field' => 'state',
+						),
+						array(
+							'field' => 'provider_type_id',
+						),
+						array(
+							'field' => 'degree',
+						),
+						array(
+							'field' => 'provider_id',
+						),
+						array(
+							'field' => 'average_ratings',
+						),
+						array(
+							'field' => 'master_name',
+						),
 					),
 				),
+				'fields' => array(
+					'display_name',
+					'specialist',
+					'gender',
+					'city',
+					'state',
+					'provider_type_id',
+					'degree',
+					'provider_id',
+					'average_ratings',
+					'master_name',
+				),
+				'filter' => array(
+					'facet' => array(
+					),
+					'field' => array(
+						'provider_type_id' => 1,
+					),
+					'query' => array(
+					),
+				),
+				'sort' => array(
+					'_distance_sort' => 'asc',
+				),
+				'groupby' => array(
+					'master_id',
+				),
+				'geo' => array(
+					'_distance_sort' => 'hash',
+					'field' => 'geo',
+					'latlong' => '40.694599,-73.990638',
+					'radius' => 10000,
+				),
+				'rows' => 7,
+				'offset' => 0,
 			),
-			'related' => array(
-				array(
-					'field' => 'display_name',
-				),
-				array(
-					'field' => 'specialist',
-				),
-				array(
-					'field' => 'gender',
-				),
-				array(
-					'field' => 'city',
-				),
-				array(
-					'field' => 'state',
-				),
-				array(
-					'field' => 'provider_type_id',
-				),
-				array(
-					'field' => 'degree',
-				),
-				array(
-					'field' => 'provider_id',
-				),
-				array(
-					'field' => 'average_ratings',
-				),
-				array(
-					'field' => 'master_name',
-				),
+			'modelConfig' => array(
+				"str_fields" => array(
+					"display_name" => array(
+						"id_field" => "master_id",
+						"related" => array(
+							array(
+								"field" => "name_combo",
+								"boost" => 2,
+								"append" => true
+							)
+						),
+						"spell" => array(
+							"field" => "name_spell",
+							"boost" => 0.1,
+							"append" => true,
+							"dictionary" => "namespellcheck"
+						),
+						"autosuggest" => array(
+							"dictionary" => "nametypeahead",
+							"field" => "name_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						),
+						"infix" => array(
+							"field" => "name_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						)
+					),
+					"name_combo" => array(
+						"id_field" => "master_id",
+						"related" => array(
+							array(
+								"field" => "display_name",
+								"boost" => 2,
+								"append" => true
+							)
+						),
+						"spell" => array(
+							"field" => "name_spell",
+							"boost" => 0.1,
+							"append" => true,
+							"dictionary" => "namespellcheck"
+						),
+						"autosuggest" => array(
+							"dictionary" => "nametypeahead",
+							"field" => "name_combo_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						),
+						"infix" => array(
+							"field" => "name_combo_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						)
+					)
+				)
 			),
-			'filter' => array(
-				'facet' => array(
-				),
-				'field' => array(
-					'provider_type_id' => 1,
-				),
-				'query' => array(
-				),
-			),
-			'sort' => array(
-				'_distance_sort' => 'asc',
-			),
-			'groupby' => array(
-				'master_id',
-			),
-			'geo' => array(
-				'_distance_sort' => 'hash',
-				'field' => 'geo',
-				'latlong' => '40.694599,-73.990638',
-				'radius' => 10000,
-			),
-			'rows' => 7,
-			'offset' => 0,
 		);
+
+
 		$expected = 'select?wt=json' .
-			'q={!geofilt score=distance filter=true pt=40.694599,-73.990638 sfield=geo d=10000}' .
-			'start=0' .
-			'rows=7' .
-			'fl=name_combo,display_name,specialist,gender,city,state,provider_type_id,degree,provider_id,average_ratings,master_name,name_combo_autosuggest' .
-			'sort=score asc' .
-			'fq={!tag=name_combo_autosuggest}( display_name:Todd^2 OR  name_combo_autosuggest:Todd)' .
-			'fq={!tag=provider_type_id}provider_type_id:1' .
-			'defType=edismax' .
-			'q.alt=*:*' .
-			'spellcheck=true' .
-			'spellcheck.q=Todd' .
-			'spellcheck.build=false' .
-			'spellcheck.dictionary=namespellcheck' .
-			'spellcheck.count=10' .
-			'spellcheck.extendedResults=true' .
-			'spellcheck.collate=true' .
-			'spellcheck.collateExtendedResults=true' .
-			'group=true' .
-			'group.field=master_id' .
-			'group.limit=1' .
-			'group.ngroups=true' .
-			'group.cache.percent=0' .
-			'group.truncate=true' .
-			'group.facet=false';
-		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+			'&q={!geofilt score=distance filter=true pt=40.694599,-73.990638 sfield=geo d=10000}' .
+			'&fl=display_name,specialist,gender,city,state,provider_type_id,degree,provider_id,average_ratings,master_name' .
+			'&fq={!tag=provider_type_id}provider_type_id:1' .
+			'&sort=score asc' .
+			'&group=true&group.limit=1&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false&group.field=master_id' .
+			'&fq=((display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)' .
+			'&rows=7';
+		$this->assertIdentical($expected, $this->createQueryBuilder($data)->to('string'));
 	}
 
 	public function testProviderSpecialtySearch() {

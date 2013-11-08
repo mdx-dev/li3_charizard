@@ -14,7 +14,9 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function offsetToString($value) {
-		return static::startToString($value);
+		if ($value > 0) {
+			return 'group.offset='. $value;
+		}
 	}
 
 	public static function rowsToString($value) {
@@ -44,7 +46,12 @@ class QueryStringBuilder extends StaticObject {
 				$key = key($value);
 				$value = $value[$key];
 			}
-			$value = $key . ' ' . $value;
+			if($key == '_distance_sort'){
+				//I think this value should be changed to 'score' in the model not here
+				$value = 'score ' . $value;
+			}else{
+				$value = $key . ' ' . $value;
+			}
 		}
 		return 'sort=' . implode(', ', $values);
 	}
@@ -87,21 +94,58 @@ class QueryStringBuilder extends StaticObject {
 	public static function geoToString($values){
 		if(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 1){
 			return "fq={!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+		}elseif(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 'hash'){
+			return "q={!geofilt score=distance filter=true pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
 		}
 	}
 
 	public static function filterToString($values){
 		if($values){
-			foreach($values as $key => $value){
-				if($value){
-
+			$filterFields = array();
+			if($values['field']){
+				foreach($values['field'] as $key => $value){
+					if($value){
+						//why are we using {!tag=} here?
+						$filterFields[] = "fq={!tag={$key}}{$key}:{$value}";
+					}
 				}
+			}
+			if($filterFields){
+				return '&' . implode('&', $filterFields);
 			}
 		}
 	}
 
 	public static function fieldsToString($values){
 		return 'fl=' . implode(',', $values);
+	}
+
+	public static function facetToString($values){
+		if($values){
+			if($values['field']){
+				$facetFields = array();
+				foreach($values['field'] as $key => $value){
+					$facetFields[] = "{!key={$key}}{$value}";
+				}
+			}
+			if($values['range']){
+				$facetRanges = array();
+				foreach($values['range'] as $range){
+					$rangeName = $range['field'];
+					$string = "facet.range={!key={$range['field']}}{$rangeName}";
+					foreach ($range as $key => $value) {
+						if($key != 'field' && isset($value)){
+							$string .= "&f.{$rangeName}.facet.range.{$key}={$value}";
+						}
+					}
+					$facetRanges[] = $string;
+				}
+			}
+			if($facetFields || $facetRanges){
+				return 'facet=true' . ($facetFields ? '&'. implode('&', $facetFields) : '').
+					($facetRanges ? '&'. implode('&', $facetRanges) : '');
+			}
+		}
 	}
 
 	/**
