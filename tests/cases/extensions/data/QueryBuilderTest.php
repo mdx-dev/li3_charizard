@@ -8,7 +8,11 @@ use li3_charizard\extensions\data\QueryBuilder;
 class QueryBuilderTest extends Unit {
 
 	public function setUp() {
-		$this->query = new QueryBuilder;
+		$this->query = $this->createQueryBuilder();
+	}
+
+	public function createQueryBuilder($config = array()) {
+		return new QueryBuilder($config);
 	}
 
 	public function testToDoesntRespondToJson() {
@@ -67,46 +71,96 @@ class QueryBuilderTest extends Unit {
 
 	public function testDisorderAcSearch() {
 		$data = array(
-			'suggestions' => array(
-				'typeahead_field' => 'disorder',
-				'typeahead_phrase' => 'Gas',
+			'data' => array(
+				'suggestions' => array(
+					'typeahead_field' => 'disorder',
+					'typeahead_phrase' => 'Gas',
+				),
+				'related' => array(
+					array('field' => 'field_specialty_id'),
+					array('field' => 'disorder_id'),
+				),
+				'sort' => array(
+					array('score' => 'desc'),
+				),
+				'groupby' => array(
+					'disorder',
+				),
+				'rows' => 15,
+				'offset' => 0,
 			),
-			'related' => array(
-				array('field' => 'field_specialty_id'),
-				array('field' => 'disorder_id'),
+			'modelConfig' => array(
+				'str_fields' => array(
+					"disorder" => array(
+						"id_field" => "disorder_id",
+						"related" => array(
+							array(
+								"field" => "disorder_id",
+								"boost" => 1,
+								"append" => true,
+							),
+							array(
+								"field" => "field_specialty_id",
+								"boost" => 0,
+								"append" => false,
+							),
+							array(
+								"field" => "specialist_id",
+								"boost" => 0,
+								"append" => false,
+							),
+							array(
+								"field" => "related_disorder_id",
+								"boost" => 2,
+								"append" => false,
+							),
+							array(
+								"field" => "related_disorder",
+								"boost" => 2,
+								"append" => true,
+							),
+							array(
+								"field" => "field_specialty",
+								"boost" => 2,
+								"append" => true,
+							),
+							array(
+								"field" => "specialist",
+								"boost" => 2,
+								"append" => true,
+							)
+						),
+						"spell" => array(
+							"field" => "disorder_spell",
+							"boost" => 0.1,
+							"append" => true,
+							"dictionary" => "disorderspellcheck",
+						),
+						"autosuggest" => array(
+							"dictionary" => "disordertypeahead",
+							"field" => "disorder_autosuggest",
+							"boost" => 0.1,
+							"append" => true,
+						),
+						"infix" => array(
+							"field" => "disorder_autosuggest",
+						),
+					),
+				),
 			),
-			'sort' => array(
-				array('score' => 'desc'),
-			),
-			'groupby' => array(
-				'disorder',
-			),
-			'rows' => 15,
-			'offset' => 0,
 		);
 		$expected = 'select?wt=json&' .
-			'q=( ( ( disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2 OR disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2)) OR disorder_autosuggest:Gas)&' .
-			'start=0&' .
-			'rows=15&' .
-			'fl=disorder,disorder_id,field_specialty_id,specialist_id,related_disorder_id,related_disorder,field_specialty,specialist,disorder_autosuggest&' .
+			'q=((disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2) OR disorder_autosuggest:Gas)&' .
 			'sort=score desc&' .
-			'defType=edismax&' .
-			'spellcheck=true&' .
-			'spellcheck.q=Gas&' .
-			'spellcheck.build=false&' .
-			'spellcheck.dictionary=disorderspellcheck&' .
-			'spellcheck.count=10&' .
-			'spellcheck.extendedResults=true&' .
-			'spellcheck.collate=true&' .
-			'spellcheck.collateExtendedResults=true&' .
 			'group=true&' .
-			'group.field=disorder&' .
 			'group.limit=1&' .
 			'group.ngroups=true&' .
 			'group.cache.percent=0&' .
 			'group.truncate=true&' .
-			'group.facet=false';
-		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+			'group.facet=false&' .
+			'group.field=disorder&' .
+			'rows=15';
+		$this->assertIdentical($expected, $this->createQueryBuilder($data)->to('string'));
 	}
 
 	public function testLocationAcSearch() {
