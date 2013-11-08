@@ -24,7 +24,16 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'bar',
 			'baz' => 'qux',
 		);
-		$expected = 'q=foo:bar OR baz:qux';
+		$expected = 'q=foo:bar AND baz:qux';
+		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
+	}
+
+	public function testSelectWithNullValue() {
+		$value = array(
+			'foo' => 'bar',
+			'baz' => null,
+		);
+		$expected = 'q=foo:bar';
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
