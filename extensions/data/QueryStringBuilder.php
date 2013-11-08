@@ -32,10 +32,10 @@ class QueryStringBuilder extends StaticObject {
 		return 'q=' . implode(' OR ', $values);
 	}
 
-	public static function suggestionsToString($values){
+	public static function suggestionsToString($values, array $config = array()) {
 		$field = $values['typeahead_field'];
 		$phrase = $values['typeahead_phrase'];
-		return 'q=' . self::comboKeyValue($field, $phrase);
+		return 'q=' . self::comboKeyValue($field, $phrase, $config);
 	}
 
 	public static function sortToString($values) {
@@ -105,36 +105,28 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	/**
-	 * TODO Hardcoded hack, I want to use custom select handlers in solr instead
-	 * of using these combined fields.
+	 * Determines the field alias and builds the query based on it.
+	 *
+	 * @param string $key
+	 * @param array  $value
+	 * @param string $config
 	 */
-	public static function comboKeyValue($key, $value){
-		$geoZipCombo = '((state:__VAL__^10 OR city:__VAL__^10 OR zip:__VAL__^10 OR ' .
-			'state_full:__VAL__^10) OR geo_zip_autosuggest:__VAL__)';
-		$disorderCombo = '((disorder_id:__VAL__^1 OR related_disorder:__VAL__^2 OR ' .
-			'field_specialty:__VAL__^2 OR specialist:__VAL__^2 OR disorder_id:__VAL__' .
-			'^1 OR related_disorder:__VAL__^2 OR field_specialty:__VAL__^2 OR ' .
-			'specialist:__VAL__^2) OR disorder_autosuggest:__VAL__)';
-		$nameCombo = 'name_autosuggest:__VAL__^0.1 OR (name_combo:__VAL__^2 OR ' .
-			'first_name:__VAL__^5 OR middle_name:__VAL__^3 OR last_name:__VAL__^7 ' .
-			'OR alias_first_name:__VAL__^1 OR alias_middle_name:__VAL__^2 OR ' .
-			'alias_last_name:__VAL__^3 OR alias_suffix:__VAL__^1)';
-		$template = null;
-		switch ($key) {
-			case 'geo_zip_combo':
-				$template = $geoZipCombo;
-				break;
-			case 'name_combo':
-			case 'display_name':
-				$template = $nameCombo;
-				break;
-			case 'disorder':
-				$template = $disorderCombo;
-				break;
+	public static function comboKeyValue($key, $value, array $config = array()) {
+		if (empty($config['str_fields'][$key])) {
+			return '';
 		}
-		if ($template) {
-			return str_replace('__VAL__', $value, $template);
+		$related = $config['str_fields'][$key]['related'];
+		$relatedArray = array();
+		foreach ($related as $relField) {
+			if (!$relField['append']) {
+				continue;
+			}
+			$relatedArray[] = $relField['field'] . ':' . $value . '^' . $relField['boost'];
 		}
+		$relatedData = implode(' OR ' , $relatedArray);
+		$infix = $config['str_fields'][$key]['infix'];
+		$infixData = ' OR ' . $infix['field'] . ':' . $value;
+		return '((' . $relatedData . ')' . $infixData . ')';
 	}
 
 }
