@@ -101,10 +101,17 @@ class QueryStringBuilder extends StaticObject {
 
 	public static function filterToString($values){
 		if($values){
-			foreach($values as $key => $value){
-				if($value){
-
+			$filterFields = array();
+			if($values['field']){
+				foreach($values['field'] as $key => $value){
+					if($value){
+						//why are we using {!tag=} here?
+						$filterFields[] = "fq={!tag={$key}}{$key}:{$value}";
+					}
 				}
+			}
+			if($filterFields){
+				return '&' . implode('&', $filterFields);
 			}
 		}
 	}
@@ -112,7 +119,6 @@ class QueryStringBuilder extends StaticObject {
 	public static function fieldsToString($values){
 		return 'fl=' . implode(',', $values);
 	}
-
 
 	public static function facetToString($values){
 		if($values){
@@ -140,12 +146,6 @@ class QueryStringBuilder extends StaticObject {
 					($facetRanges ? '&'. implode('&', $facetRanges) : '');
 			}
 		}
-	}
-
-	public static function boostToString($values){
-		//boosts don't seem to be used in any of the current vitals queries,
-		// maybe remove from models instead of here?
-		return '';
 	}
 
 	/**

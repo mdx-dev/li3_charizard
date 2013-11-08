@@ -24,11 +24,6 @@ class QueryBuilder extends Object {
 		return $this;
 	}
 
-	public function config($fields) {
-		$this->_config = $fields;
-		return $this;
-	}
-
 	public function to($type) {
 		if ($type === 'string') {
 			return $this->__toString();
@@ -37,41 +32,21 @@ class QueryBuilder extends Object {
 	}
 
 	public function __toString() {
-
-		echo "<pre>";
-		print_r($this);
-		echo "</pre>";
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
 		foreach ($this->_data as $key => $value) {
 			$method = "{$key}ToString";
 			$raw[] = $builder::$method($value, $this->_modelConfig);
 		}
-		//$queryString = implode('&', $raw);
-		$queryString = self::validate(implode('&', $raw));
-
-		return $queryString;
+		return static::validate(implode('&', $raw));
 	}
 
-
 	public function validate($queryString){
-		$list = explode("&", $queryString);
-		$query_parts = array(
-			'base' => $list[0],  //handler and output engine
-			'q' => array(),  //multiple qs
-			'fq' => array(),  //multiple fqs
-			'fl' => '',  //string of fields to be returned
-			'sort' => array(),
-			'start' => array(),
-			'rows' => array(),
-			'facet' => array(),
-			'group' => array(),
-		);
+		//there can not be more than 1 q
 		if(substr_count($queryString, "&q=") > 1){
-			//there an not be more than 1 q
-			preg_match_all("/&q=(.*?)&/", $queryString, $qStrings);									
-			$qStrings = $qStrings[0];			
-			for($x=0; $x<count($qStrings); $x++){				
+			preg_match_all("/&q=(.*?)&/", $queryString, $qStrings);
+			$qStrings = $qStrings[0];
+			for($x=0; $x<count($qStrings); $x++){
 				$queryString = preg_replace("/&q=(.*?)&/", "__STRING{$x}__", $queryString, 1);
 			}
 			$i=1;
@@ -80,13 +55,16 @@ class QueryBuilder extends Object {
 					$queryString = str_replace('__STRING0__', $string, $queryString);
 				}else{
 					$queryString = str_replace('__STRING' . $i++ . '__', str_replace('&q=', '&fq=', $string), $queryString);
-				}				
-			}			
+				}
+			}
 		}
+		// replace && with &
 		while(substr_count($queryString, '&&') > 0){
-			$queryString = str_replace('&&', '&', $queryString); // replace && with &
+			$queryString = str_replace('&&', '&', $queryString);
 		}
-		$queryString = trim($queryString, '&'); //remove trailing or opening &
+		//remove trailing or opening &
+		$queryString = trim($queryString, '&');
+
 		return $queryString;
 	}
 
