@@ -1,14 +1,18 @@
 <?php
 
-namespace li3_charizard\tests\cases\extensions\data;
+namespace li3_charizard\tests\cases\extensions\adapter\data;
 
 use lithium\test\Unit;
-use li3_charizard\extensions\data\QueryStringBuilder;
+use li3_charizard\extensions\adapter\data\QueryStringBuilder;
 
 class QueryStringBuilderTest extends Unit {
 
 	public function testStart() {
-		$this->assertIdentical('start=10', QueryStringBuilder::startToString(10));
+		$expected = array(
+			'key' => 'start',
+			'value' => 10,
+		);
+		$this->assertIdentical($expected, QueryStringBuilder::startToString(10));
 	}
 
 	public function testEmptyStartToString() {
@@ -16,7 +20,11 @@ class QueryStringBuilderTest extends Unit {
 	}
 
 	public function testRows() {
-		$this->assertIdentical('rows=10', QueryStringBuilder::rowsToString(10));
+		$expected = array(
+			'key' => 'rows',
+			'value' => 10,
+		);
+		$this->assertIdentical($expected, QueryStringBuilder::rowsToString(10));
 	}
 
 	public function testSelect() {
@@ -24,7 +32,10 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'bar',
 			'baz' => 'qux',
 		);
-		$expected = 'q=foo:bar AND baz:qux';
+		$expected = array(
+			'key' => 'q',
+			'value' => 'foo:bar AND baz:qux',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
@@ -33,7 +44,10 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'bar',
 			'baz' => '',
 		);
-		$expected = 'q=foo:bar';
+		$expected = array(
+			'key' => 'q',
+			'value' => 'foo:bar',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
@@ -42,7 +56,10 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'bar',
 			'baz' => null,
 		);
-		$expected = 'q=foo:bar';
+		$expected = array(
+			'key' => 'q',
+			'value' => 'foo:bar',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
@@ -51,7 +68,10 @@ class QueryStringBuilderTest extends Unit {
 			'foo' => 'asc',
 			'baz' => 'desc',
 		);
-		$expected = 'sort=foo asc, baz desc';
+		$expected = array(
+			'key' => 'sort',
+			'value' => 'foo asc, baz desc',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 
@@ -60,14 +80,16 @@ class QueryStringBuilderTest extends Unit {
 			'foo',
 			'bar',
 		);
-		$expected = 'group=true&' .
-			'group.limit=1&' .
-			'group.ngroups=true&' .
-			'group.cache.percent=0&' .
-			'group.truncate=true&' .
-			'group.facet=false&' .
-			'group.field=foo&' .
-			'group.field=bar';
+		$expected = array(
+			array('key' => 'group', 'value' => 'true'),
+			array('key' => 'group.limit', 'value' => '1'),
+			array('key' => 'group.ngroups', 'value' => 'true'),
+			array('key' => 'group.cache.percent', 'value' => '0'),
+			array('key' => 'group.truncate', 'value' => 'true'),
+			array('key' => 'group.facet', 'value' => 'false'),
+			array('key' => 'group.field', 'value' => 'foo'),
+			array('key' => 'group.field', 'value' => 'bar'),
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
 	}
 
@@ -77,7 +99,10 @@ class QueryStringBuilderTest extends Unit {
 			'bar',
 			'baz',
 		);
-		$expected = 'fl=foo,bar,baz';
+		$expected = array(
+			'key' => 'fl',
+			'value' => 'foo,bar,baz',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::fieldsToString($value));
 	}
 
@@ -88,7 +113,10 @@ class QueryStringBuilderTest extends Unit {
 			'latlong' => '36.1537,-95.9926',
 			'radius' => 19,
 		);
-		$expected = 'fq={!bbox pt=36.1537,-95.9926 sfield=foo d=19}';
+		$expected = array(
+			'key' => 'fq',
+			'value' => '{!bbox pt=36.1537,-95.9926 sfield=foo d=19}',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::geoToString($value));
 	}
 
@@ -163,9 +191,12 @@ class QueryStringBuilderTest extends Unit {
 				),
 			),
 		);
-		$expected = 'q=((name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
-			' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
-			' OR alias_suffix:foo^1) OR name_autosuggest:foo^0.1)';
+		$expected = array(
+			'key' => 'q',
+			'value' => '((name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
+				' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
+				' OR alias_suffix:foo^1) OR name_autosuggest:foo^0.1)',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
@@ -222,7 +253,10 @@ class QueryStringBuilderTest extends Unit {
 				),
 			),
 		);
-		$expected = 'q=((state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3) OR geo_zip_autosuggest:Tul^0.5)';
+		$expected = array(
+			'key' => 'q',
+			'value' => '((state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3) OR geo_zip_autosuggest:Tul^0.5)',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
@@ -270,7 +304,10 @@ class QueryStringBuilderTest extends Unit {
 				),
 			),
 		);
-		$expected = 'q=(state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3)';
+		$expected = array(
+			'key' => 'q',
+			'value' => '(state:Tul^4 OR city:Tul^5 OR zip:Tul^3 OR state_full:Tul^3)',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
 
@@ -279,30 +316,27 @@ class QueryStringBuilderTest extends Unit {
 			array('foo' => 'asc'),
 			array('baz' => 'desc'),
 		);
-		$expected = 'sort=foo asc, baz desc';
+		$expected = array(
+			'key' => 'sort',
+			'value' => 'foo asc, baz desc',
+		);
 		$this->assertIdentical($expected, QueryStringBuilder::sortToString($value));
 	}
 
-	public function testRelatedToString() {
-		$this->skipIf(true, 'We have not discovered what this field does.');
-	}
-
-	public function testGeoToString() {
-		$this->skipIf(true, 'Method has hardcoded values.');
-	}
-
-	public function testFilterToString() {
-		$this->skipIf(true, 'Method has not yet been implemented');
-	}
-
 	public function testFieldsToStringSimple() {
-		$expected = 'fl=foo,bar';
+		$expected = array(
+			'key' => 'fl',
+			'value' => 'foo,bar',
+		);
 		$result = QueryStringBuilder::fieldsToString(array('foo', 'bar'));
 		$this->assertIdentical($expected, $result);
 	}
 
 	public function testEmptyFieldsToString() {
-		$expected = 'fl=';
+		$expected = array(
+			'key' => 'fl',
+			'value' => '',
+		);
 		$result = QueryStringBuilder::fieldsToString(array());
 		$this->assertIdentical($expected, $result);
 	}
@@ -312,7 +346,10 @@ class QueryStringBuilderTest extends Unit {
 			'geodist(geo,36.1537,-95.9926)' => 'asc',
 			'score' => 'desc',
 		);
-		$expected = 'sort=geodist(geo,36.1537,-95.9926) asc, score desc';
+		$expected = array(
+			'key' => 'sort',
+			'value' => 'geodist(geo,36.1537,-95.9926) asc, score desc',
+		);
 		$result = QueryStringBuilder::sortToString($values);
 		$this->assertIdentical($expected, $result);
 	}
@@ -323,7 +360,12 @@ class QueryStringBuilderTest extends Unit {
 				'provider_type_id' => 1,
 			),
 		);
-		$expected = 'fq={!tag=provider_type_id}provider_type_id:1';
+		$expected = array(
+			array(
+				'key' => 'fq',
+				'value' => '{!tag=provider_type_id}provider_type_id:1',
+			),
+		);
 		$result = QueryStringBuilder::filterToString($values);
 		$this->assertIdentical($expected, $result);
 	}
@@ -335,11 +377,55 @@ class QueryStringBuilderTest extends Unit {
 				'practice_id' => 2,
 			),
 		);
-		$expected = 'fq={!tag=provider_type_id}provider_type_id:1&' .
-			'fq={!tag=practice_id}practice_id:2';
+		$expected = array(
+			array('key' => 'fq', 'value' => '{!tag=provider_type_id}provider_type_id:1'),
+			array('key' => 'fq', 'value' => '{!tag=practice_id}practice_id:2'),
+		);
 		$result = QueryStringBuilder::filterToString($values);
 		$this->assertIdentical($expected, $result);
 	}
+
+	public function testCompileFlat() {
+		$values = array(
+			array(
+				'key' => 'foo',
+				'value' => 'baz',
+			),
+			array(
+				'key' => 'bar',
+				'value' => 'quz',
+			),
+		);
+		$this->assertIdentical('foo=baz&bar=quz', QueryStringBuilder::compile($values));
+	}
+
+	public function testCompileWithString() {
+		$values = array(
+			array(
+				'key' => 'foo',
+				'value' => 'baz',
+			),
+			'bar=quz',
+		);
+		$this->assertIdentical('foo=baz&bar=quz', QueryStringBuilder::compile($values));
+	}
+
+	public function testCompileMultiDimensional() {
+		$values = array(
+			array(
+				array(
+					'key' => 'foo',
+					'value' => 'baz',
+				),
+				array(
+					'key' => 'bar',
+					'value' => 'quz',
+				),
+			),
+		);
+		$this->assertIdentical('foo=baz&bar=quz', QueryStringBuilder::compile($values));
+	}
+
 }
 
 ?>

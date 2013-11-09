@@ -1,9 +1,9 @@
 <?php
 
-namespace li3_charizard\tests\cases\extensions\data;
+namespace li3_charizard\tests\cases\extensions\adapter\data;
 
 use lithium\test\Unit;
-use li3_charizard\extensions\data\QueryBuilder;
+use li3_charizard\extensions\adapter\data\QueryBuilder;
 
 class QueryBuilderTest extends Unit {
 
@@ -12,7 +12,9 @@ class QueryBuilderTest extends Unit {
 	}
 
 	public function createQueryBuilder($config = array()) {
-		return new QueryBuilder($config);
+		$query = new QueryBuilder;
+		$query->import($config);
+		return $query;
 	}
 
 	public function testToDoesntRespondToJson() {
@@ -30,7 +32,7 @@ class QueryBuilderTest extends Unit {
 	}
 
 	public function testImportReturnsThis() {
-		$expected = 'li3_charizard\extensions\data\QueryBuilder';
+		$expected = 'li3_charizard\extensions\adapter\data\QueryBuilder';
 		$this->assertInstanceOf($expected, $this->query->import(array()));
 	}
 

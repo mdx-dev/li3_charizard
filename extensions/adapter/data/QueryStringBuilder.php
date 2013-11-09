@@ -1,6 +1,6 @@
 <?php
 
-namespace li3_charizard\extensions\data;
+namespace li3_charizard\extensions\adapter\data;
 
 use lithium\core\StaticObject;
 use BadMethodCallException;
@@ -9,18 +9,27 @@ class QueryStringBuilder extends StaticObject {
 
 	public static function startToString($value) {
 		if ($value > 0) {
-			return 'start=' . $value;
+			return array(
+				'key' => 'start',
+				'value' => $value,
+			);
 		}
 	}
 
 	public static function offsetToString($value) {
 		if ($value > 0) {
-			return 'group.offset='. $value;
+			return array(
+				'key' => 'group.offset',
+				'value' => $value,
+			);
 		}
 	}
 
 	public static function rowsToString($value) {
-		return 'rows=' . $value;
+		return array(
+			'key' => 'rows',
+			'value' => $value,
+		);
 	}
 
 	public static function selectToString($values) {
@@ -31,13 +40,19 @@ class QueryStringBuilder extends StaticObject {
 				$value = $key . ':' . $value;
 			}
 		}
-		return 'q=' . implode(' AND ', array_filter($values));
+		return array(
+			'key' => 'q',
+			'value' => implode(' AND ', array_filter($values)),
+		);
 	}
 
 	public static function suggestionsToString($values, array $config = array()) {
 		$field = $values['typeahead_field'];
 		$phrase = $values['typeahead_phrase'];
-		return 'q=' . static::comboKeyValue($field, $phrase, $config);
+		return array(
+			'key' => 'q',
+			'value' => static::comboKeyValue($field, $phrase, $config),
+		);
 	}
 
 	public static function sortToString($values) {
@@ -53,22 +68,28 @@ class QueryStringBuilder extends StaticObject {
 				$value = $key . ' ' . $value;
 			}
 		}
-		return 'sort=' . implode(', ', $values);
+		return array(
+			'key' => 'sort',
+			'value' => implode(', ', $values),
+		);
 	}
 
-	public static function groupByToString($values) {
+	public static function groupbyToString($values) {
 		$items = array(
-			'group=true',
-			'group.limit=1',
-			'group.ngroups=true',
-			'group.cache.percent=0',
-			'group.truncate=true',
-			'group.facet=false',
+			array('key' => 'group', 'value' => 'true'),
+			array('key' => 'group.limit', 'value' => '1'),
+			array('key' => 'group.ngroups', 'value' => 'true'),
+			array('key' => 'group.cache.percent', 'value' => '0'),
+			array('key' => 'group.truncate', 'value' => 'true'),
+			array('key' => 'group.facet', 'value' => 'false'),
 		);
 		foreach ($values as $value) {
-			$items[] = 'group.field=' . $value;
+			$items[] = array(
+				'key' => 'group.field',
+				'value' => $value,
+			);
 		}
-		return implode('&', $items);
+		return $items;
 	}
 
 	/**
@@ -93,9 +114,15 @@ class QueryStringBuilder extends StaticObject {
 
 	public static function geoToString($values){
 		if(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 1){
-			return "fq={!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+			return array(
+				'key' => 'fq',
+				'value' => "{!bbox pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}",
+			);
 		}elseif(array_key_exists('_distance_sort', $values) && $values['_distance_sort'] == 'hash'){
-			return "q={!geofilt score=distance filter=true pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}";
+			return array(
+				'key' => 'q',
+				'value' => "{!geofilt score=distance filter=true pt={$values['latlong']} sfield={$values['field']} d={$values['radius']}}",
+			);
 		}
 	}
 
@@ -109,17 +136,31 @@ class QueryStringBuilder extends StaticObject {
 		}
 		$filterFields = array();
 		foreach ($values['field'] as $key => $value) {
-			if ($value) {
-				$filterFields[] = "fq={!tag={$key}}{$key}:{$value}";
+			if (!$value) {
+				continue;
 			}
+			$filterFields[] = array(
+				'key' => 'fq',
+				'value' => "{!tag={$key}}{$key}:{$value}",
+			);
 		}
-		return implode('&', $filterFields);
+		return $filterFields;
 	}
 
 	public static function fieldsToString($values){
-		return 'fl=' . implode(',', $values);
+		return array(
+			'key' => 'fl',
+			'value' => implode(',', $values),
+		);
 	}
 
+
+	/**
+	 * Rewrite to return an array not string.
+	 * TODO no tests, didn't know how to approach.
+	 *
+	 * @param mixed $values
+	 */
 	public static function facetToString($values){
 		if($values){
 			if($values['field']){
@@ -181,6 +222,32 @@ class QueryStringBuilder extends StaticObject {
 			$infixData .= '^' . $infix['boost'];
 		}
 		return '((' . $relatedData . ')' . $infixData . ')';
+	}
+
+
+	/**
+	 * Compiles the key values into a usable query string.
+	 *
+	 * @param array $query
+	 * @return array
+	 */
+	public static function compile(array $query) {
+		$segments = array();
+		foreach ($query as $value) {
+			if (empty($value)) {
+				continue;
+			}
+			if (is_string($value)) {
+				$segments[] = $value;
+				continue;
+			}
+			if (is_array(current($value))) {
+				$segments[] = static::compile($value);
+				continue;
+			}
+			$segments[] = $value['key'] . '=' . $value['value'];
+		}
+		return implode('&', $segments);
 	}
 
 }

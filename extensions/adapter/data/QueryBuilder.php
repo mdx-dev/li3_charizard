@@ -1,26 +1,48 @@
 <?php
 
-namespace li3_charizard\extensions\data;
+namespace li3_charizard\extensions\adapter\data;
 
 use lithium\core\Object;
+use lithium\data\model\Query;
 use InvalidArgumentException;
 
 class QueryBuilder extends Object {
 
-	protected $_data = array();
-
-	protected $_modelConfig = array();
+	protected $_query = array();
 
 	protected $_config = array();
 
 	protected $_classes = array(
-		'builder' => 'li3_charizard\extensions\data\QueryStringBuilder',
+		'builder' => 'li3_charizard\extensions\adapter\data\QueryStringBuilder',
 	);
 
-	protected $_autoConfig = array('config', 'data', 'classes', 'modelConfig');
+	protected $_fields = array(
+		'suggestions',
+		'select',
+		'fields',
+		'start',
+		'offset',
+		'filter',
+		'sort',
+		'groupby',
+		'related',
+		'facet',
+		'geo',
+		'rows',
+	);
 
+	protected $_autoConfig = array(
+		'query',
+		'config',
+		'classes',
+		'fields',
+	);
+
+	/**
+	 * TODO SHOULD BE REMOVED ONLY USED IN TESTS
+	 */
 	public function import($fields) {
-		$this->_data = $fields;
+		$this->_query = new Query($fields);
 		return $this;
 	}
 
@@ -34,17 +56,19 @@ class QueryBuilder extends Object {
 	public function __toString() {
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
-		foreach ($this->_data as $key => $value) {
+		$source = $this->_query->source();
+		foreach ($this->_fields as $key) {
 			$method = "{$key}ToString";
-			$raw[] = $builder::$method($value, $this->_modelConfig);
+			$data = $this->_query->$key();
+			if (empty($data)) { continue; }
+			$raw[] = $builder::$method($data, (array) $source['config']);
 		}
-		return static::validate(implode('&', $raw));
+		return static::validate($builder::compile($raw));
 	}
 
 	public function validate($queryString){
 		//there can not be more than 1 q
 		if(substr_count($queryString, "&q=") > 1){
-			preg_match_all("/&q=(.*?)&/", $queryString, $qStrings);
 			$qStrings = $qStrings[0];
 			for($x=0; $x<count($qStrings); $x++){
 				$queryString = preg_replace("/&q=(.*?)&/", "__STRING{$x}__", $queryString, 1);
