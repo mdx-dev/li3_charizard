@@ -156,36 +156,68 @@ class QueryStringBuilder extends StaticObject {
 
 
 	/**
-	 * Rewrite to return an array not string.
-	 * TODO no tests, didn't know how to approach.
+	 * Returns Faceting portion of query
 	 *
 	 * @param mixed $values
+	 * @return array $facetParameters
 	 */
 	public static function facetToString($values){
-		if($values){
-			if($values['field']){
+		$facetOptions = array('field', 'range', 'query', 'threads');
+		if($values && count(array_intersect_key(array_flip($facetOptions), $values))){
+			$facetParameters = array('facet' => array('key' => 'facet', 'value' => 'true'));
+
+			/*Facet Field Variables*/
+			if(isset($values['field'])){
 				$facetFields = array();
 				foreach($values['field'] as $key => $value){
-					$facetFields[] = "{!key={$key}}{$value}";
+					$facetFields[] = array(
+						'key' => 'facet.field',
+						'value' => "{!key={$key}}{$value}"
+					);
 				}
+				$facetParameters['facetFields'] = $facetFields;
 			}
-			if($values['range']){
+
+			/*Facet Range Variables*/
+			if(isset($values['range'])){
 				$facetRanges = array();
 				foreach($values['range'] as $range){
 					$rangeName = $range['field'];
-					$string = "facet.range={!key={$range['field']}}{$rangeName}";
 					foreach ($range as $key => $value) {
-						if($key != 'field' && isset($value)){
-							$string .= "&f.{$rangeName}.facet.range.{$key}={$value}";
+						if($key == 'field'){
+							$facetRanges[] = array(
+								'key' => 'facet.range',
+								'value' => '{!key=' .
+								(isset($range['label'])? $range['label'] : $range['field']) .
+								'}' . $value,
+							);
+						}elseif($key != 'label'){
+							$facetRanges[] = array(
+								'key' => "f.{$rangeName}.facet.range.{$key}",
+								'value' => $value
+							);
 						}
 					}
-					$facetRanges[] = $string;
 				}
+				$facetParameters['faceRanges'] = $facetRanges;
 			}
-			if($facetFields || $facetRanges){
-				return 'facet=true' . ($facetFields ? '&'. implode('&', $facetFields) : '').
-					($facetRanges ? '&'. implode('&', $facetRanges) : '');
+
+			/*Facet Query Variables*/
+			if(isset($values['query'])){
+				$facetQueries = array();
+				foreach($values['query'] as $query){
+					if(isset($query['field']) && isset($query['value'])){
+						$facetQueries[] =array(
+							'key' => 'facet.query',
+							'value' => '{!key=' .
+								(isset($query['label']) ? $query['label'] : $query['field']) .
+								'}'. $query['field']. ':'. $query['value']
+						);
+					}
+				}
+				$facetParameters['facetQueries'] = $facetQueries;
 			}
+			return $facetParameters;
 		}
 	}
 
@@ -245,7 +277,13 @@ class QueryStringBuilder extends StaticObject {
 				$segments[] = static::compile($value);
 				continue;
 			}
-			$segments[] = $value['key'] . '=' . $value['value'];
+			if(!array_key_exists('key', $value)){
+				if (is_array(current($value))) {
+					$segments[] = static::compile($value);
+				}
+			}else{
+				$segments[] = $value['key'] . '=' . $value['value'];
+			}
 		}
 		return implode('&', $segments);
 	}
