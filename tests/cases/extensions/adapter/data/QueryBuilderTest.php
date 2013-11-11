@@ -162,7 +162,7 @@ class QueryBuilderTest extends Unit {
 			'group.facet=false&' .
 			'group.field=disorder&' .
 			'rows=15';
-		$this->assertIdentical($expected, $this->createQueryBuilder($data)->to('string'));
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
 	public function testLocationAcSearch() {
@@ -741,7 +741,7 @@ class QueryBuilderTest extends Unit {
 			'group.cache.percent=0' .
 			'group.truncate=true' .
 			'group.facet=false';
-		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+	$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
 }
