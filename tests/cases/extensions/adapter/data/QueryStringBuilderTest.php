@@ -426,6 +426,146 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical('foo=baz&bar=quz', QueryStringBuilder::compile($values));
 	}
 
+	public function testFacetFields() {
+		$values = array(
+			'field' => array(
+				'foo' => 'foo',
+				'label' => 'bar',
+			),
+		);
+
+		$expected = array(
+			'facet' => array(
+										'key' => 'facet',
+										'value' => 'true',
+									),
+			'facetFields' => array(
+													array(
+														'key' => 'facet.field',
+														'value' => '{!key=foo}foo'
+													),
+											 array(
+													'key' => 'facet.field',
+													'value' => '{!key=label}bar'
+												),
+										 ),
+		);
+		$result = QueryStringBuilder::facetToString($values);
+		$this->assertIdentical(json_encode($expected), json_encode($result));
+	}
+
+	public function testFacetRanges() {
+		$values = array(
+			'range' => array(
+				array(
+					'field' => 'experience',
+					'start' => 5,
+					'end' => 1000,
+					'gap' => 5,
+					'upper' => null,
+					'label' => 'ASE',
+				),
+				array(
+					'field' => 'avg_wait_time',
+					'start' => 0,
+					'end' => 1000,
+					'gap' => 10,
+					'upper' => 1,
+					'lower' => null,
+				),
+			),
+		);
+
+		$expected = array(
+		 'facet' => array(
+				'key' => 'facet',
+				'value' => 'true',
+			 ),
+			 'faceRanges' => array(
+				array(
+					'key' => 'facet.range',
+					'value' => '{!key=ASE}experience',
+				),
+				array(
+				 'key' => 'f.experience.facet.range.start',
+				 'value' => 5,
+				),
+				array(
+					'key' => 'f.experience.facet.range.end',
+					'value' => 1000,
+				),
+				array(
+					'key' => 'f.experience.facet.range.gap',
+					'value' => 5,
+				 ),
+				array(
+					'key' => 'f.experience.facet.range.upper',
+					'value' => NULL,
+				),
+				array(
+					'key' => 'facet.range', 'value' => '{!key=avg_wait_time}avg_wait_time', ),
+				array(
+					'key' => 'f.avg_wait_time.facet.range.start',
+					'value' => 0,
+				),
+				array(
+					'key' => 'f.avg_wait_time.facet.range.end',
+					'value' => 1000,
+				),
+				array(
+					'key' => 'f.avg_wait_time.facet.range.gap',
+					'value' => 10,
+				),
+				array(
+					'key' => 'f.avg_wait_time.facet.range.upper',
+					'value' => 1,
+				),
+				array(
+					'key' => 'f.avg_wait_time.facet.range.lower',
+					'value' => NULL,
+				),
+			 ),
+			);
+		$result = QueryStringBuilder::facetToString($values);
+		$this->assertIdentical(json_encode($expected), json_encode($result));
+	}
+
+	public function testFacetQueries(){
+		$values = array(
+			'query' => array(
+					array(
+						'field' => 'experience',
+						'value' => 12,
+						'label' => 'optional',
+					),
+					array(
+						'field' => 'experience',
+						'value' => '[1 TO 12]',
+					),
+				),
+		);
+
+		$expected = array(
+			'facet' => array(
+				'key' => 'facet',
+				'value' => 'true',
+			),
+			'facetQueries' => array(
+				array(
+					'key' => 'facet.query',
+					'value' => '{!key=optional}experience:12',
+				),
+				array(
+					'key' => 'facet.query',
+					'value' => '{!key=experience}experience:[1 TO 12]',
+				),
+			 ),
+			);
+		$result = QueryStringBuilder::facetToString($values);
+		$this->assertIdentical(json_encode($expected), json_encode($result));
+	}
+
+
 }
 
 ?>
