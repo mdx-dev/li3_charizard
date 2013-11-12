@@ -38,11 +38,11 @@ class QueryBuilder extends Object {
 		'fields',
 	);
 
-	/**
-	 * TODO SHOULD BE REMOVED ONLY USED IN TESTS
-	 */
 	public function import($fields) {
-		$this->_query = new Query($fields);
+		if (is_array($fields)) {
+			$fields = new Query($fields);
+		}
+		$this->_query = $fields;
 		return $this;
 	}
 
