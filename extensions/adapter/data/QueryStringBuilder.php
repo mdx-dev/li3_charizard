@@ -299,7 +299,7 @@ class QueryStringBuilder extends StaticObject {
 					$segments[] = static::compile($value);
 				}
 			}else{
-				$segments[] = $value['key'] . '=' . $value['value'];
+				$segments[] = $value['key'] . '=' . urlencode($value['value']);
 			}
 		}
 		return implode('&', $segments);
