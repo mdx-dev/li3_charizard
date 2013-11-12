@@ -32,10 +32,10 @@ class QueryStringBuilder extends StaticObject {
 		);
 	}
 
-	public static function selectToString($values) {
+	public static function selectToString($values, array $config = array()) {
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
-				$value = static::comboKeyValue($key, $value);
+				$value = static::comboKeyValue($key, $value, $config);
 			} elseif ($value !== '' && !is_null($value)) {
 				$value = $key . ':' . $value;
 			}
@@ -217,6 +217,12 @@ class QueryStringBuilder extends StaticObject {
 				}
 				$facetParameters['facetQueries'] = $facetQueries;
 			}
+			if(isset($values['mincount'])){
+				$facetParameters['mincount'] = array(
+																				'key' => 'facet.mincount',
+																				'value' => $values['mincount'],
+																			);
+			}
 			return $facetParameters;
 		}
 	}
@@ -232,6 +238,7 @@ class QueryStringBuilder extends StaticObject {
 		if (empty($config['str_fields'][$key]['related'])) {
 			return '';
 		}
+
 		$related = $config['str_fields'][$key]['related'];
 		$relatedArray = array();
 		foreach ($related as $relField) {
@@ -245,15 +252,25 @@ class QueryStringBuilder extends StaticObject {
 			$relatedArray[] = $relData;
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
-		if (empty($config['str_fields'][$key]['infix'])) {
+		if (empty($config['str_fields'][$key]['infix']) &&  empty($config['str_fields'][$key]['autosuggest'])) {
 			return '(' . $relatedData . ')';
-		}
+		}		
 		$infix = $config['str_fields'][$key]['infix'];
 		$infixData = ' OR ' . $infix['field'] . ':' . $value;
 		if (!empty($infix['boost'])) {
 			$infixData .= '^' . $infix['boost'];
 		}
-		return '((' . $relatedData . ')' . $infixData . ')';
+		$autosuggestData = '';
+		if(isset($config['str_fields'][$key]['autosuggest'])){
+			$autosuggest = $config['str_fields'][$key]['autosuggest'];
+			$autosuggestData = ' ' . $autosuggest['field'] . ':' . $value;
+			if (!empty($autosuggest['boost'])) {
+				$autosuggestData .= '^' . $autosuggest['boost'];
+			}
+			$autosuggestData .= ' OR ';
+		}
+
+		return '(' . $autosuggestData. '(' . $relatedData . ')' . $infixData . ')';
 	}
 
 
