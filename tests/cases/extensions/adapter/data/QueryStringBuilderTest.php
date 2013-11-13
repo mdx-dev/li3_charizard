@@ -193,7 +193,7 @@ class QueryStringBuilderTest extends Unit {
 		);
 		$expected = array(
 			'key' => 'q',
-			'value' => '((name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
+			'value' => '( name_autosuggest:foo^0.1 OR (name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
 				' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
 				' OR alias_suffix:foo^1) OR name_autosuggest:foo^0.1)',
 		);

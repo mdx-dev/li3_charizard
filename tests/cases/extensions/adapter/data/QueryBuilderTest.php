@@ -43,6 +43,7 @@ class QueryBuilderTest extends Unit {
 			),
 			'fields' => array(
 				'facility_id',
+				'name',
 			),
 			'filter' => array(
 				'field' => array(),
@@ -63,11 +64,10 @@ class QueryBuilderTest extends Unit {
 		);
 		$expected = 'select?wt=json&' .
 			'q=name:Urgent&' .
-			'start=0&' .
-			'rows=10&' .
-			'fl=facility_id,name&sort=geodist(geo,40.694599,-73.990638) asc,score desc&' .
-			'fq={!bbox pt=40.694599,-73.990638 sfield=geo d=10000}&' .
-			'defType=edismax';
+			'fl=facility_id,name&' .
+			'sort=geodist(geo,36.1537,-95.9926) asc, score desc&' .
+			'fq={!bbox pt=36.1537,-95.9926 sfield=geo d=10000}&' .
+			'rows=10';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -152,7 +152,7 @@ class QueryBuilderTest extends Unit {
 			),
 		);
 		$expected = 'select?wt=json&' .
-			'q=((disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2) OR disorder_autosuggest:Gas)&' .
+			'q=( disorder_autosuggest:Gas^0.1 OR (disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2) OR disorder_autosuggest:Gas)&' .
 			'sort=score desc&' .
 			'group=true&' .
 			'group.limit=1&' .
@@ -171,6 +171,16 @@ class QueryBuilderTest extends Unit {
 				'typeahead_field' => 'geo_zip_combo',
 				'typeahead_phrase' => 'Tul',
 			),
+			'fields' => array(
+				'geo_zip_combo',
+				'state',
+				'city',
+				'zip',
+				'state_full',
+				'geo',
+				'geo_cc',
+				'geo_zip_autosuggest',
+			),
 			'related' => array(
 				array('field' => 'city'),
 				array('field' => 'state'),
@@ -186,23 +196,65 @@ class QueryBuilderTest extends Unit {
 				'state',
 			),
 			'rows' => 10,
-			'offset' => 0
+			'offset' => 0,
+			'modelConfig' => array(
+				'str_fields' => array(
+					"geo_zip_combo" => array(
+						"id_field" => "id",
+						"related" => array(
+							array(
+								"field" => "state",
+								"boost" => 10,
+								"append" => true
+							),
+							array(
+								"field" => "city",
+								"boost" => 10,
+								"append" => true
+							),
+							array(
+								"field" => "zip",
+								"boost" => 10,
+								"append" => true
+							),
+							array(
+								"field" => "state_full",
+								"boost" => 10,
+								"append" => true
+							),
+							array(
+								"field" => "geo",
+								"boost" => 10,
+								"append" => false
+							),
+							array(
+								"field" => "geo_cc",
+								"boost" => 10,
+								"append" => false
+							)
+						),
+						"infix" => array(
+							"field" => "geo_zip_autosuggest",
+							"boost" => 0.5,
+							"append" => true
+						)
+					),
+				),
+			),
 		);
 		$expected = 'select?wt=json&' .
-			'q=( ( ( state:Tul^10 OR city:Tul^10 OR zip:Tul^10 OR state_full:Tul^10 OR state:Tul^10 OR city:Tul^10 OR zip:Tul^10 OR state_full:Tul^10)) OR geo_zip_autosuggest:Tul)&' .
-			'start=0&' .
-			'rows=10&' .
+			'q=((state:Tul^10 OR city:Tul^10 OR zip:Tul^10 OR state_full:Tul^10) OR geo_zip_autosuggest:Tul^0.5)&' .
 			'fl=geo_zip_combo,state,city,zip,state_full,geo,geo_cc,geo_zip_autosuggest&' .
-			'sort=pop desc,score desc&' .
-			'defType=edismax&' .
+			'sort=pop desc, score desc&' .
 			'group=true&' .
-			'group.field=city&' .
-			'group.field=state&' .
 			'group.limit=1&' .
 			'group.ngroups=true&' .
 			'group.cache.percent=0&' .
 			'group.truncate=true&' .
-			'group.facet=false';
+			'group.facet=false&' .
+			'group.field=city&' .
+			'group.field=state&' .
+			'rows=10';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -217,6 +269,15 @@ class QueryBuilderTest extends Unit {
 				'master_id',
 				'geo',
 				'provider_practice_id',
+				'name_combo',
+				'first_name',
+				'middle_name',
+				'last_name',
+				'alias_first_name',
+				'alias_middle_name',
+				'alias_last_name',
+				'alias_suffix',
+				'display_name',
 			),
 			'facet' => array(
 				'field' => array(
@@ -245,6 +306,7 @@ class QueryBuilderTest extends Unit {
 						'lower' => null,
 					),
 				),
+				'mincount' => 1,
 			),
 			'filter' => array(
 				'facet' => array(),
@@ -272,53 +334,109 @@ class QueryBuilderTest extends Unit {
 			),
 			'rows' => 10,
 			'offset' => 0,
+			'modelConfig' => array(
+				"str_fields" => array(
+					"display_name" => array(
+						"id_field" => "master_id",
+						"related" => array(
+							array(
+								"field" => "name_combo",
+								"boost" => 2,
+								"append" => true
+							),
+							array(
+								"field" => "first_name",
+								"boost" => 5,
+								"append" => true
+							),
+							array(
+								"field" => "middle_name",
+								"boost" => 3,
+								"append" => true
+							),
+							array(
+								"field" => "last_name",
+								"boost" => 7,
+								"append" => true
+							),
+							array(
+								"field" => "alias_first_name",
+								"boost" => 1,
+								"append" => true
+							),
+							array(
+								"field" => "alias_middle_name",
+								"boost" => 2,
+								"append" => true
+							),
+							array(
+								"field" => "alias_last_name",
+								"boost" => 3,
+								"append" => true
+							),
+							array(
+								"field" => "alias_suffix",
+								"boost" => 1,
+								"append" => true
+							)
+						),
+						"spell" => array(
+							"field" => "name_spell",
+							"boost" => 0.1,
+							"append" => true,
+							"dictionary" => "namespellcheck"
+						),
+						"autosuggest" => array(
+							"dictionary" => "nametypeahead",
+							"field" => "name_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						),
+						"infix" => array(
+							"field" => "name_autosuggest",
+							"boost" => 0.1,
+							"append" => true
+						)
+					),
+				),
+			),
 		);
-		$expected = 'select?wt=json' .
-			'q=(  name_autosuggest:Todd^0.1 OR ( (  name_combo:Todd^2 OR  first_name:Todd^5 OR  middle_name:Todd^3 OR  last_name:Todd^7 OR  alias_first_name:Todd^1 OR  alias_middle_name:Todd^2 OR  alias_last_name:Todd^3 OR  alias_suffix:Todd^1)) OR  display_name:Todd)' .
-			'start=0' .
-			'rows=10' .
-			'fl=score,provider_id,master_id,geo,provider_practice_id,name_combo,first_name,middle_name,last_name,alias_first_name,alias_middle_name,alias_last_name,alias_suffix,display_name' .
-			'sort=geodist(geo,40.694599,-73.990638) asc,score desc' .
+
+		$expected = 'select?wt=json&' .
+			'q=( name_autosuggest:Todd^0.1 OR (name_combo:Todd^2 OR first_name:Todd^5 OR middle_name:Todd^3 OR last_name:Todd^7 OR alias_first_name:Todd^1 OR alias_middle_name:Todd^2 OR alias_last_name:Todd^3 OR alias_suffix:Todd^1) OR name_autosuggest:Todd^0.1)&' .
+			'fl=score,provider_id,master_id,geo,provider_practice_id,name_combo,first_name,middle_name,last_name,alias_first_name,alias_middle_name,alias_last_name,alias_suffix,display_name&' .
+			'fq={!tag=provider_type_id}provider_type_id:1&' .
+			'sort=geodist(geo,40.694599,-73.990638) asc, score desc&' .
+			'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=master_id&' .
+			'facet=true&' .
+			'facet.field={!key=us_educated}us_educated&' .
+			'facet.field={!key=is_abms_certified}is_abms_certified&' .
+			'facet.field={!key=is_top_doctor}is_top_doctor&' .
+			'facet.field={!key=is_patients_choice}is_patients_choice&' .
+			'facet.field={!key=degree}degree&' .
+			'facet.field={!key=gender}gender&' .
+			'facet.field={!key=language_id}language_id&' .
+			'facet.range={!key=experience}experience&' .
+			'f.experience.facet.range.start=5&' .
+			'f.experience.facet.range.end=1000&' .
+			'f.experience.facet.range.gap=5&' .
+			'f.experience.facet.range.upper=&' .
+			'facet.range={!key=avg_wait_time}avg_wait_time&' .
+			'f.avg_wait_time.facet.range.start=0&' .
+			'f.avg_wait_time.facet.range.end=1000&' .
+			'f.avg_wait_time.facet.range.gap=10&' .
+			'f.avg_wait_time.facet.range.upper=1&' .
+			'f.avg_wait_time.facet.range.lower=&' .
+			'facet.mincount=1&' .
 			'fq={!bbox pt=40.694599,-73.990638 sfield=geo d=10000}' .
-			'fq={!tag=provider_type_id}provider_type_id:1' .
-			'defType=edismax' .
-			'spellcheck=true' .
-			'spellcheck.q=Todd' .
-			'spellcheck.build=false' .
-			'spellcheck.dictionary=namespellcheck' .
-			'spellcheck.count=10' .
-			'spellcheck.extendedResults=true' .
-			'spellcheck.collate=true' .
-			'spellcheck.collateExtendedResults=true' .
-			'facet=true' .
-			'facet.missing=false' .
-			'facet.mincount=1' .
-			'facet.field={!key=us_educated}us_educated' .
-			'facet.field={!key=is_abms_certified}is_abms_certified' .
-			'facet.field={!key=is_top_doctor}is_top_doctor' .
-			'facet.field={!key=is_patients_choice}is_patients_choice' .
-			'facet.field={!key=degree}degree' .
-			'facet.field={!key=gender}gender' .
-			'facet.field={!key=language_id}language_id' .
-			'facet.range={!key=experience}experience' .
-			'facet.range={!key=avg_wait_time}avg_wait_time' .
-			'f.experience.facet.range.start=5' .
-			'f.experience.facet.range.end=1000' .
-			'f.experience.facet.range.gap=5' .
-			'f.experience.facet.range.other=none' .
-			'f.experience.facet.range.include=lower' .
-			'f.avg_wait_time.facet.range.start=0' .
-			'f.avg_wait_time.facet.range.end=1000' .
-			'f.avg_wait_time.facet.range.gap=10' .
-			'f.avg_wait_time.facet.range.other=none' .
-			'f.avg_wait_time.facet.range.include=upper' .
-			'group=true' .
-			'group.field=master_id' .
-			'group.limit=1' .
-			'group.ngroups=true' .
-			'group.cache.percent=0' .
-			'group.truncate=true' .
-			'group.facet=false';
+			'&rows=10';
+
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -512,14 +630,13 @@ class QueryBuilderTest extends Unit {
 			),
 		);
 
-
 		$expected = 'select?wt=json' .
 			'&q={!geofilt score=distance filter=true pt=40.694599,-73.990638 sfield=geo d=10000}' .
 			'&fl=display_name,specialist,gender,city,state,provider_type_id,degree,provider_id,average_ratings,master_name' .
 			'&fq={!tag=provider_type_id}provider_type_id:1' .
 			'&sort=score asc' .
 			'&group=true&group.limit=1&group.ngroups=true&group.cache.percent=0&group.truncate=true&group.facet=false&group.field=master_id' .
-			'&fq=((display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)' .
+			'&fq=( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)' .
 			'&rows=7';
 		$this->assertIdentical($expected, $this->createQueryBuilder($data)->to('string'));
 	}
@@ -536,6 +653,7 @@ class QueryBuilderTest extends Unit {
 				'provider_id',
 				'master_id',
 				'geo',
+				'specialist_id',
 				'provider_practice_id',
 			),
 			'facet' => array(
@@ -565,6 +683,7 @@ class QueryBuilderTest extends Unit {
 						'lower' => null,
 					),
 				),
+				'mincount' => 1,
 			),
 			'filter' => array(
 				'facet' => array(),
@@ -593,44 +712,42 @@ class QueryBuilderTest extends Unit {
 			'rows' => 10,
 			'offset' => 0,
 		);
-		$expected = 'select?wt=json' .
-			'q=specialist_id:137 AND  standing_code:P' .
-			'start=0' .
-			'rows=10' .
-			'fl=score,provider_id,master_id,geo,provider_practice_id,specialist_id,standing_code' .
-			'sort=physician_algorithm_quality desc,geodist(geo,36.1537,-95.9926) asc' .
-			'fq={!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}' .
-			'fq={!tag=provider_type_id}provider_type_id:1' .
-			'defType=edismax' .
-			'facet=true' .
-			'facet.missing=false' .
-			'facet.mincount=1' .
-			'facet.field={!key=us_educated}us_educated' .
-			'facet.field={!key=is_abms_certified}is_abms_certified' .
-			'facet.field={!key=is_top_doctor}is_top_doctor' .
-			'facet.field={!key=is_patients_choice}is_patients_choice' .
-			'facet.field={!key=degree}degree' .
-			'facet.field={!key=gender}gender' .
-			'facet.field={!key=language_id}language_id' .
-			'facet.range={!key=experience}experience' .
-			'facet.range={!key=avg_wait_time}avg_wait_time' .
-			'f.experience.facet.range.start=5' .
-			'f.experience.facet.range.end=1000' .
-			'f.experience.facet.range.gap=5' .
-			'f.experience.facet.range.other=none' .
-			'f.experience.facet.range.include=lower' .
-			'f.avg_wait_time.facet.range.start=0' .
-			'f.avg_wait_time.facet.range.end=1000' .
-			'f.avg_wait_time.facet.range.gap=10' .
-			'f.avg_wait_time.facet.range.other=none' .
-			'f.avg_wait_time.facet.range.include=upper' .
-			'group=true' .
-			'group.field=master_id' .
-			'group.limit=1' .
-			'group.ngroups=true' .
-			'group.cache.percent=0' .
-			'group.truncate=true' .
-			'group.facet=false';
+
+
+		$expected = 'select?wt=json&' .
+			'q=specialist_id:137 AND standing_code:P&' .
+			'fl=score,provider_id,master_id,geo,specialist_id,provider_practice_id&' .
+			'fq={!tag=provider_type_id}provider_type_id:1&' .
+			'sort=physician_algorithm_quality desc, geodist(geo,36.1537,-95.9926) asc&' .
+			'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=master_id&' .
+			'facet=true&facet.field={!key=us_educated}us_educated&' .
+			'facet.field={!key=is_abms_certified}is_abms_certified&' .
+			'facet.field={!key=is_top_doctor}is_top_doctor&' .
+			'facet.field={!key=is_patients_choice}is_patients_choice&' .
+			'facet.field={!key=degree}degree&' .
+			'facet.field={!key=gender}gender&' .
+			'facet.field={!key=language_id}language_id&' .
+			'facet.range={!key=experience}experience&' .
+			'f.experience.facet.range.start=5&' .
+			'f.experience.facet.range.end=1000&' .
+			'f.experience.facet.range.gap=5&' .
+			'f.experience.facet.range.upper=&' .
+			'facet.range={!key=avg_wait_time}avg_wait_time&' .
+			'f.avg_wait_time.facet.range.start=0&' .
+			'f.avg_wait_time.facet.range.end=1000&' .
+			'f.avg_wait_time.facet.range.gap=10&' .
+			'f.avg_wait_time.facet.range.upper=1&' .
+			'f.avg_wait_time.facet.range.lower=&' .
+			'facet.mincount=1&' .
+			'fq={!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}&' .
+			'rows=10';
+
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -674,6 +791,7 @@ class QueryBuilderTest extends Unit {
 						'lower' => null,
 					),
 				),
+				'mincount' => 1,
 			),
 			'filter' => array(
 				'facet' => array(),
@@ -703,44 +821,40 @@ class QueryBuilderTest extends Unit {
 			'rows' => 10,
 			'offset' => 0,
 		);
-		$expected = 'select?wt=json' .
-			'q=disorder_id:2483 AND  standing_code:P' .
-			'start=0' .
-			'rows=10' .
-			'fl=score,provider_id,master_id,geo,provider_practice_id,disorder_id,standing_code' .
-			'sort=score desc,physician_algorithm_quality desc,geodist(geo,36.1537,-95.9926) asc' .
+		$expected = 'select?wt=json&' .
+			'q=disorder_id:2483 AND standing_code:P&' .
+			'fl=score,provider_id,master_id,geo,provider_practice_id&' .
+			'fq={!tag=provider_type_id}provider_type_id:1&' .
+			'sort=score desc, physician_algorithm_quality desc, geodist(geo,36.1537,-95.9926) asc&' .
+			'group=true&' .
+			'group.limit=1&' .
+			'group.ngroups=true&' .
+			'group.cache.percent=0&' .
+			'group.truncate=true&' .
+			'group.facet=false&' .
+			'group.field=master_id&' .
+			'facet=true&' .
+			'facet.field={!key=us_educated}us_educated&' .
+			'facet.field={!key=is_abms_certified}is_abms_certified&' .
+			'facet.field={!key=is_top_doctor}is_top_doctor&' .
+			'facet.field={!key=is_patients_choice}is_patients_choice&' .
+			'facet.field={!key=degree}degree&' .
+			'facet.field={!key=gender}gender&' .
+			'facet.field={!key=language_id}language_id&' .
+			'facet.range={!key=experience}experience&' .
+			'f.experience.facet.range.start=5&' .
+			'f.experience.facet.range.end=1000&' .
+			'f.experience.facet.range.gap=5&' .
+			'f.experience.facet.range.upper=&' .
+			'facet.range={!key=avg_wait_time}avg_wait_time&' .
+			'f.avg_wait_time.facet.range.start=0&' .
+			'f.avg_wait_time.facet.range.end=1000&' .
+			'f.avg_wait_time.facet.range.gap=10&' .
+			'f.avg_wait_time.facet.range.upper=1&' .
+			'f.avg_wait_time.facet.range.lower=&' .
+			'facet.mincount=1&' .
 			'fq={!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}' .
-			'fq={!tag=provider_type_id}provider_type_id:1' .
-			'defType=edismax' .
-			'facet=true' .
-			'facet.missing=false' .
-			'facet.mincount=1' .
-			'facet.field={!key=us_educated}us_educated' .
-			'facet.field={!key=is_abms_certified}is_abms_certified' .
-			'facet.field={!key=is_top_doctor}is_top_doctor' .
-			'facet.field={!key=is_patients_choice}is_patients_choice' .
-			'facet.field={!key=degree}degree' .
-			'facet.field={!key=gender}gender' .
-			'facet.field={!key=language_id}language_id' .
-			'facet.range={!key=experience}experience' .
-			'facet.range={!key=avg_wait_time}avg_wait_time' .
-			'f.experience.facet.range.start=5' .
-			'f.experience.facet.range.end=1000' .
-			'f.experience.facet.range.gap=5' .
-			'f.experience.facet.range.other=none' .
-			'f.experience.facet.range.include=lower' .
-			'f.avg_wait_time.facet.range.start=0' .
-			'f.avg_wait_time.facet.range.end=1000' .
-			'f.avg_wait_time.facet.range.gap=10' .
-			'f.avg_wait_time.facet.range.other=none' .
-			'f.avg_wait_time.facet.range.include=upper' .
-			'group=true' .
-			'group.field=master_id' .
-			'group.limit=1' .
-			'group.ngroups=true' .
-			'group.cache.percent=0' .
-			'group.truncate=true' .
-			'group.facet=false';
+			'&rows=10';
 	$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 

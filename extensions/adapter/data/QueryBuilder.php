@@ -56,7 +56,7 @@ class QueryBuilder extends Object {
 	public function __toString() {
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
-		$source = $this->_query->source();
+		$source = $this->_query->modelConfig();
 		foreach ($this->_fields as $key) {
 			$method = "{$key}ToString";
 			$data = $this->_query->$key();
@@ -67,7 +67,7 @@ class QueryBuilder extends Object {
 				}
 			}
 			if (empty($data)) { continue; }
-			$raw[] = $builder::$method($data, (array) $source['config']);
+			$raw[] = $builder::$method($data, (array) $source);
 		}
 		return static::validate($builder::compile($raw));
 	}
