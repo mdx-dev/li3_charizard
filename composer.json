@@ -1,0 +1,8 @@
+{
+	"name": "mdx-dev/li3_charizard",
+	"type": "lithium-library",
+	"description": "Lithium SOLR library.",
+	"keywords": ["solr", "curl", "lucene", "lithium", "li3"],
+	"homepage": "https://github.com/mdx-dev/li3_charizard",
+	"license": "GNU General Public License"
+}
