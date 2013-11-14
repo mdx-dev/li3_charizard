@@ -254,7 +254,7 @@ class QueryStringBuilder extends StaticObject {
 		$relatedData = implode(' OR ' , $relatedArray);
 		if (empty($config['str_fields'][$key]['infix']) &&  empty($config['str_fields'][$key]['autosuggest'])) {
 			return '(' . $relatedData . ')';
-		}		
+		}
 		$infix = $config['str_fields'][$key]['infix'];
 		$infixData = ' OR ' . $infix['field'] . ':' . $value;
 		if (!empty($infix['boost'])) {
@@ -299,7 +299,7 @@ class QueryStringBuilder extends StaticObject {
 					$segments[] = static::compile($value);
 				}
 			}else{
-				$segments[] = $value['key'] . '=' . $value['value'];
+				$segments[] = $value['key'] . '=' . urlencode($value['value']);
 			}
 		}
 		return implode('&', $segments);
