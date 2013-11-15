@@ -56,7 +56,14 @@ class QueryBuilder extends Object {
 	public function __toString() {
 		$builder = $this->_classes['builder'];
 		$raw = array('select?wt=json');
-		$source = $this->_query->modelConfig();
+
+		//XXX I'm pretty sure this is a completely non-standard use of source...
+		$source = $this->_query->source();
+		$modelConfig = array();
+		if (is_array($source) && !empty($source['config'])) {
+			$modelConfig = $source['config'];
+		}
+
 		foreach ($this->_fields as $key) {
 			$method = "{$key}ToString";
 			$data = $this->_query->$key();
@@ -67,7 +74,7 @@ class QueryBuilder extends Object {
 				}
 			}
 			if (empty($data)) { continue; }
-			$raw[] = $builder::$method($data, (array) $source);
+			$raw[] = $builder::$method($data, $modelConfig);
 		}
 		return static::validate($builder::compile($raw));
 	}
