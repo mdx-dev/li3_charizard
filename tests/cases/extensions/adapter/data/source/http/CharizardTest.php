@@ -108,14 +108,14 @@ class CharizardTest extends Unit {
 				null,
 				array('foo', 'bar', 'baz'),
 				array(
-					'class' => 'set',
 					'stats' => array(
 						'count' => 1234,
+						'facets' => array(),
+						'facet_counts' => array(),
 						'matches' => 1234,
 						'ngroups' => 5678,
-						'facet_counts' => array(),
-						'facets' => array(),
 					),
+					'class' => 'set',
 				)
 			)->eq(1)
 			->success()

@@ -29,6 +29,33 @@ class Charizard extends Http {
 		$this->_queryBuilder = $this->_instance('query');
 	}
 
+	//TODO I imagine this logic is something the model/query should be driving--
+	// depending on how varied solr responses are.
+	// Or, perhaps this is something that belongs entirely within cast/item?
+	public function _parseResponse($response = null) {
+		$parsed = array(
+			'data'    => array(),
+			'options' => array(),
+		);
+		$response = json_decode($response, true);
+		//XXX Is there anything useful we can do with non-array responses?
+		if (!is_array($response)) return $parsed;
+
+		//TODO some mechanism for handling other response types.
+
+		// Initial master id grouped response type.
+		$parsed['data'] = $response['grouped']['master_id']['groups'];
+		$parsed['options']['stats'] = array(
+			'count'        => $response['grouped']['master_id']['matches'],
+			'facets'       => array(),
+			'facet_counts' => array(),
+			'matches'      => $response['grouped']['master_id']['matches'],
+			'ngroups'      => $response['grouped']['master_id']['ngroups'],
+		);
+
+		return $parsed;
+	}
+
 	/**
 	 * Gets the data from the query builder and returns it.
 	 *
@@ -37,18 +64,17 @@ class Charizard extends Http {
 	 * @return DocumentSet
 	 */
 	public function read($query, array $options = array()) {
-		$data = json_decode($this->connection->get($this->path($query)), true);
-		$response = $data['grouped']['master_id']['groups'];
-		return $this->item($query->model(), $response, array(
+		$raw = $this->connection->get($this->path($query));
+		$parsed = $this->_parseResponse($raw);
+		$entityOptions = $parsed['options'] + array(
 			'class' => 'set',
-			'stats' => array(
-				'count' => $data['grouped']['master_id']['matches'],
-				'matches' => $data['grouped']['master_id']['matches'],
-				'ngroups' => $data['grouped']['master_id']['ngroups'],
-				'facet_counts' => array(),
-				'facets' => array(),
-			),
-		));
+		);
+		return $this->item($query->model(), $parsed['data'], $entityOptions);
+	}
+
+	// No exposed query formatting methods.
+	public function methods() {
+		return array();
 	}
 
 	/**
