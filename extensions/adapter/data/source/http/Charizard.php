@@ -29,31 +29,63 @@ class Charizard extends Http {
 		$this->_queryBuilder = $this->_instance('query');
 	}
 
-	//TODO I imagine this logic is something the model/query should be driving--
-	// depending on how varied solr responses are.
-	// Or, perhaps this is something that belongs entirely within cast/item?
-	public function _parseResponse($response = null) {
+	protected function _normalizeFacets(&$stats) {
+		$facets = array();
+		if (isset($stats->facet_counts)) {
+			foreach ($stats->facet_counts->facet_fields as $field => $counts) {
+				$facets[$field] = array();
+				for ($i = 0; $i < sizeof($counts); $i += 2) {
+					$facets[$field][$counts[$i]] = $counts[$i+1];
+				}
+			}
+		}
+		$stats->facets = $facets;
+	}
+
+	public static function objectToArray($obj) {
+		if (is_object($obj)) $obj = get_object_vars($obj);
+		return is_array($obj) ? array_map(__METHOD__, $obj) : $obj;
+	}
+
+	public function _parseResponse($model, $response = null) {
 		$parsed = array(
 			'data'    => array(),
 			'options' => array(),
 		);
-		$response = json_decode($response, true);
-		//XXX Is there anything useful we can do with non-array responses?
-		if (!is_array($response)) return $parsed;
+		//XXX Decoding this as an object to maintain compatibility with any existing
+		//    model _normalizeFacet methods.
+		$response = json_decode($response);
+		//XXX Is there anything useful we can do with non-array/object responses?
+		if (!is_object($response)) return $parsed;
 
-		//TODO some mechanism for handling other response types.
+		if (isset($response->grouped)) {
+			$names = array_keys(get_object_vars($response->grouped));
+			$name = $names[0];
+			$stats = $response->grouped->$name;
+			$parsed['data'] = $stats->groups;
+			unset($stats->groups);
+			$stats->count = $stats->ngroups;
+		} else {
+			$stats = $response->response;
+			$parsed['data'] = $stats->docs;
+			unset($stats->docs);
+			$stats->count = $stats->numFound;
+		}
 
-		// Initial master id grouped response type.
-		$parsed['data'] = $response['grouped']['master_id']['groups'];
-		$parsed['options']['stats'] = array(
-			'count'        => $response['grouped']['master_id']['matches'],
-			'facets'       => array(),
-			'facet_counts' => array(),
-			'matches'      => $response['grouped']['master_id']['matches'],
-			'ngroups'      => $response['grouped']['master_id']['ngroups'],
-		);
+		if (isset($response->facet_counts)) {
+			$stats->facet_counts = $response->facet_counts;
+			$this->_normalizeFacets($stats);
+			// callback on the model
+			if (method_exists($model, '_normalizeFacets')) {
+				$model::_normalizeFacets($stats);
+			}
+		} else {
+			$stats->facet_counts = array();
+			$stats->facets = array();
+		}
 
-		return $parsed;
+		$parsed['options']['stats'] = $stats;
+		return static::objectToArray($parsed);
 	}
 
 	/**
@@ -64,8 +96,8 @@ class Charizard extends Http {
 	 * @return DocumentSet
 	 */
 	public function read($query, array $options = array()) {
-		$raw = $this->connection->get($this->path($query));
-		$parsed = $this->_parseResponse($raw);
+		$response = $this->connection->get($this->path($query));
+		$parsed = $this->_parseResponse($query->model(), $response);
 		$entityOptions = $parsed['options'] + array(
 			'class' => 'set',
 		);
