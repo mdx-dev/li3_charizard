@@ -72,19 +72,19 @@ class QueryBuilder extends Object {
 		return static::validate($builder::compile($raw));
 	}
 
-	public function validate($queryString){
+	public static function validate($queryString){
 		//there can not be more than 1 q
 		if(substr_count($queryString, "&q=") > 1){
 			//if there is a geo hash query make sure that is the first q
-			if(substr_count($queryString, "{!geofilt") > 0){
+			if(substr_count($queryString, urlencode('{!geofilt')) > 0){
 				preg_match_all("/&q=(.*?)&/", $queryString, $qStrings);
 				$qStrings = $qStrings[0];
 				for($x=0; $x<count($qStrings); $x++){
-					$queryString = preg_replace("/&q=(.*?)&/", "__STRING{$x}__", $queryString, 1);
+					$queryString = preg_replace("/&q=(.*?)&/", "__STRING{$x}__&", $queryString, 1);
 				}
 				$i=1;
 				foreach ($qStrings as $string) {
-					if(substr_count($string, "{!geofilt") > 0)   {
+					if(substr_count($string, urlencode('{!geofilt')) > 0){
 						$queryString = str_replace('__STRING0__', $string, $queryString);
 					}else{
 						$queryString = str_replace('__STRING' . $i++ . '__', str_replace('&q=', '&fq=', $string), $queryString);
@@ -100,9 +100,12 @@ class QueryBuilder extends Object {
 		while(substr_count($queryString, '&&') > 0){
 			$queryString = str_replace('&&', '&', $queryString);
 		}
+		// replace == with =
+		while(substr_count($queryString, '==') > 0){
+			$queryString = str_replace('==', '=', $queryString);
+		}
 		//remove trailing or opening &
 		$queryString = trim($queryString, '&');
-
 		return $queryString;
 	}
 

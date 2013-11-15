@@ -863,7 +863,39 @@ class QueryBuilderTest extends Unit {
 			'facet.mincount=' . urlencode('1') . '&' .
 			'fq=' . urlencode('{!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}') . '' .
 			'&rows=' . urlencode('10');
-	$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+	}
+
+	function testValidateMultipleQ(){
+		$queryString =  'select?wt=json&' .
+			'q=' . urlencode('foo:aaa') . '&' .
+			'fq=' . urlencode('bar:bbc') . '&' .
+			'sort=' .urlencode('score asc') . '&' .
+			'q=' .urlencode('baz:[1 TO *]'). '&' .
+			'rows=' . urlencode('17');
+		$expected =  'select?wt=json&' .
+			'q=' . urlencode('foo:aaa') . '&' .
+			'fq=' . urlencode('bar:bbc') . '&' .
+			'sort=' .urlencode('score asc') . '&' .
+			'fq=' .urlencode('baz:[1 TO *]'). '&' .
+			'rows=' . urlencode('17');
+		$this->assertIdentical($expected, QueryBuilder::validate($queryString));
+	}
+
+	function testValidateMultipleQWithGeoHash(){
+		$queryString =  'select?wt=json&' .
+			'q=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
+			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1'). '&' .
+			'sort=' .urlencode('score asc') . '&' .
+			'q=' .urlencode('{!geofilt score=distance filter=true pt=40.694599,-73.990638 sfield=geo d=10000}'). '&' .
+			'rows=' . urlencode('7');
+		$expected =  'select?wt=json&' .
+			'q=' .urlencode('{!geofilt score=distance filter=true pt=40.694599,-73.990638 sfield=geo d=10000}'). '&' .
+			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1'). '&' .
+			'sort=' .urlencode('score asc') . '&' .
+			'fq=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
+			'rows=' . urlencode('7');
+		$this->assertIdentical($expected, QueryBuilder::validate($queryString));
 	}
 
 }
