@@ -29,6 +29,65 @@ class Charizard extends Http {
 		$this->_queryBuilder = $this->_instance('query');
 	}
 
+	protected function _normalizeFacets(&$stats) {
+		$facets = array();
+		if (isset($stats->facet_counts)) {
+			foreach ($stats->facet_counts->facet_fields as $field => $counts) {
+				$facets[$field] = array();
+				for ($i = 0; $i < sizeof($counts); $i += 2) {
+					$facets[$field][$counts[$i]] = $counts[$i+1];
+				}
+			}
+		}
+		$stats->facets = $facets;
+	}
+
+	public static function objectToArray($obj) {
+		if (is_object($obj)) $obj = get_object_vars($obj);
+		return is_array($obj) ? array_map(__METHOD__, $obj) : $obj;
+	}
+
+	public function _parseResponse($model, $response = null) {
+		$parsed = array(
+			'data'    => array(),
+			'options' => array(),
+		);
+		//XXX Decoding this as an object to maintain compatibility with any existing
+		//    model _normalizeFacet methods.
+		$response = json_decode($response);
+		//XXX Is there anything useful we can do with non-array/object responses?
+		if (!is_object($response)) return $parsed;
+
+		if (isset($response->grouped)) {
+			$names = array_keys(get_object_vars($response->grouped));
+			$name = $names[0];
+			$stats = $response->grouped->$name;
+			$parsed['data'] = $stats->groups;
+			unset($stats->groups);
+			$stats->count = $stats->ngroups;
+		} else {
+			$stats = $response->response;
+			$parsed['data'] = $stats->docs;
+			unset($stats->docs);
+			$stats->count = $stats->numFound;
+		}
+
+		if (isset($response->facet_counts)) {
+			$stats->facet_counts = $response->facet_counts;
+			$this->_normalizeFacets($stats);
+			// callback on the model
+			if (method_exists($model, '_normalizeFacets')) {
+				$model::_normalizeFacets($stats);
+			}
+		} else {
+			$stats->facet_counts = array();
+			$stats->facets = array();
+		}
+
+		$parsed['options']['stats'] = $stats;
+		return static::objectToArray($parsed);
+	}
+
 	/**
 	 * Gets the data from the query builder and returns it.
 	 *
@@ -37,18 +96,17 @@ class Charizard extends Http {
 	 * @return DocumentSet
 	 */
 	public function read($query, array $options = array()) {
-		$data = json_decode($this->connection->get($this->path($query)), true);
-		$response = $data['grouped']['master_id']['groups'];
-		return $this->item($query->model(), $response, array(
+		$response = $this->connection->get($this->path($query));
+		$parsed = $this->_parseResponse($query->model(), $response);
+		$entityOptions = $parsed['options'] + array(
 			'class' => 'set',
-			'stats' => array(
-				'count' => $data['grouped']['master_id']['matches'],
-				'matches' => $data['grouped']['master_id']['matches'],
-				'ngroups' => $data['grouped']['master_id']['ngroups'],
-				'facet_counts' => array(),
-				'facets' => array(),
-			),
-		));
+		);
+		return $this->item($query->model(), $parsed['data'], $entityOptions);
+	}
+
+	// No exposed query formatting methods.
+	public function methods() {
+		return array();
 	}
 
 	/**
