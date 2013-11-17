@@ -76,6 +76,10 @@ class QueryBuilder extends Object {
 			if (empty($data)) { continue; }
 			$raw[] = $builder::$method($data, $modelConfig);
 		}
+
+		//XXX hard-coding query parser to Extended DisMax. It looks like all the
+		//    sample queries use it.
+		$raw[] = array('key' => 'defType', 'value' => 'edismax');
 		return static::validate($builder::compile($raw));
 	}
 
