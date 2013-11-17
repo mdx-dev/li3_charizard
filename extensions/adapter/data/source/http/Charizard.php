@@ -2,6 +2,7 @@
 
 namespace li3_charizard\extensions\adapter\data\source\http;
 
+use lithium\data\model\QueryException;
 use lithium\data\source\Http;
 use lithium\core\Libraries;
 
@@ -27,6 +28,14 @@ class Charizard extends Http {
 		);
 		parent::__construct($config + $defaults);
 		$this->_queryBuilder = $this->_instance('query');
+	}
+
+	public function create($query, array $options = array()) {
+		throw new QueryException("Create operations are not supported by this adapter.");
+	}
+
+	public function delete($query, array $options = array()) {
+		throw new QueryException("Delete operations are not supported by this adapter.");
 	}
 
 	protected function _normalizeFacets(&$stats) {
@@ -144,6 +153,10 @@ class Charizard extends Http {
 			}
 		}
 		return parent::cast($entity, $data, $options);
+	}
+
+	public function update($query, array $options = array()) {
+		throw new QueryException("Update operations are not supported by this adapter.");
 	}
 
 }
