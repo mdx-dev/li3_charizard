@@ -64,8 +64,23 @@ class Charizard extends Http {
 		//XXX Decoding this as an object to maintain compatibility with any existing
 		//    model _normalizeFacet methods.
 		$response = json_decode($response);
-		//XXX Is there anything useful we can do with non-array/object responses?
-		if (!is_object($response)) return $parsed;
+
+		if (
+			!is_object($response)
+			|| empty($response->responseHeader)
+		) {
+			throw new QueryException('Failed to read Solr response: `' . var_export($response, true) . '`.');
+		}
+
+		$responseHeader = $response->responseHeader;
+		if (
+			!isset($responseHeader->status)
+			|| $responseHeader->status !== 0
+		) {
+			$msg = isset($response->error->msg) ? $response->error->msg : '';
+			$code = isset($response->error->code) ? $response->error->code : '';
+			throw new QueryException("Solr error: code=`{$code}` msg=`{$msg}`.");
+		}
 
 		if (isset($response->grouped)) {
 			$names = array_keys(get_object_vars($response->grouped));
