@@ -133,9 +133,14 @@ class Charizard extends Http {
 	public function cast($entity, array $data, array $options = array()) {
 		$model = $entity->model();
 		foreach ($data as $key => $val) {
-			if (!is_array($val) || empty($val['doclist']['docs'])) { continue; }
-			foreach ($val['doclist']['docs'] as $doc) {
-				$data[$key] = $this->item($model, $doc, array('class' => 'entity'));
+			if (!is_array($val)) continue;
+			if (!empty($val['doclist']['docs'])) {
+				//XXX The builder is hard-coded to limit groups to one element,
+				//    which is why we only use one doc here.
+				//TODO This seems like something that belongs in model-config / queries.
+				$data[$key] = $this->item($model, $val['doclist']['docs'][0], array('class' => 'entity'));
+			} else {
+				$data[$key] = $this->item($model, $val, array('class' => 'entity'));
 			}
 		}
 		return parent::cast($entity, $data, $options);
