@@ -67,7 +67,8 @@ class QueryBuilderTest extends Unit {
 			'fl=' . urlencode('facility_id,name') . '&' .
 			'sort=' . urlencode('geodist(geo,36.1537,-95.9926) asc, score desc') . '&' .
 			'fq=' . urlencode('{!bbox pt=36.1537,-95.9926 sfield=geo d=10000}') . '&' .
-			'rows=' . urlencode('10');
+			'rows=' . urlencode('10') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -161,7 +162,8 @@ class QueryBuilderTest extends Unit {
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
 			'group.field=' . urlencode('disorder') . '&' .
-			'rows=' . urlencode('15');
+			'rows=' . urlencode('15') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -254,7 +256,8 @@ class QueryBuilderTest extends Unit {
 			'group.facet=' . urlencode('false') . '&' .
 			'group.field=' . urlencode('city') . '&' .
 			'group.field=' . urlencode('state') . '&' .
-			'rows=' . urlencode('10');
+			'rows=' . urlencode('10') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -435,7 +438,8 @@ class QueryBuilderTest extends Unit {
 			'f.avg_wait_time.facet.range.lower=&' .
 			'facet.mincount=' . urlencode('1') . '&' .
 			'fq=' . urlencode('{!bbox pt=40.694599,-73.990638 sfield=geo d=10000}') . '' .
-			'&rows=' . urlencode('10');
+			'&rows=' . urlencode('10') .
+			'&defType=edismax';
 
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
@@ -492,7 +496,8 @@ class QueryBuilderTest extends Unit {
 			'group.facet=' . urlencode('false') . '&' .
 			'group.field=' . urlencode('master_id') . '&' .
 			'fq=' . urlencode('{!bbox pt=40.6689264,-73.9797357 sfield=geo d=48.28032}') . '&' .
-			'rows=' . urlencode('6');
+			'rows=' . urlencode('6') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
@@ -644,7 +649,8 @@ class QueryBuilderTest extends Unit {
 			'group.facet=' . urlencode('false') . '&' .
 			'group.field=' . urlencode('master_id') . '&' .
 			'fq=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
-			'rows=' . urlencode('7');
+			'rows=' . urlencode('7') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->createQueryBuilder($data)->to('string'));
 	}
 
@@ -754,7 +760,8 @@ class QueryBuilderTest extends Unit {
 			'f.avg_wait_time.facet.range.lower=&' .
 			'facet.mincount=' . urlencode('1') . '&' .
 			'fq=' . urlencode('{!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}') . '&' .
-			'rows=' . urlencode('10');
+			'rows=' . urlencode('10') .
+			'&defType=edismax';
 
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
@@ -862,7 +869,8 @@ class QueryBuilderTest extends Unit {
 			'f.avg_wait_time.facet.range.lower=&' .
 			'facet.mincount=' . urlencode('1') . '&' .
 			'fq=' . urlencode('{!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}') . '' .
-			'&rows=' . urlencode('10');
+			'&rows=' . urlencode('10') .
+			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
