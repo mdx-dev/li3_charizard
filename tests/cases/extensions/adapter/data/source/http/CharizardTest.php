@@ -92,6 +92,9 @@ class CharizardTest extends Unit {
 		$this->_createObjects();
 		$this->charizard->connection->applyFilter('get', function() {
 			return json_encode(array(
+				'responseHeader' => array(
+					'status' => 0,
+				),
 				'grouped' => array(
 					'master_id' => array(
 						'matches' => 1234,
