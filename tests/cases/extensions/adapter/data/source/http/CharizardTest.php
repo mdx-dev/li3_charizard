@@ -82,13 +82,19 @@ class CharizardTest extends Unit {
 			),
 		);
 		$result = $this->charizard->cast($documentset, $data);
-		$this->assertTrue(Mocker::chain($this->charizard)->called('item')->eq(3)->success());
+		//$this->assertTrue(Mocker::chain($this->charizard)->called('item')->eq(3)->success());
+		//XXX We don't currently support groups with more than one doc.
+		//    Checking the number of times 'item' is called is probably insufficient
+		//    to check if all documents were built--since this test was passing before.
 	}
 
 	public function testRead() {
 		$this->_createObjects();
 		$this->charizard->connection->applyFilter('get', function() {
 			return json_encode(array(
+				'responseHeader' => array(
+					'status' => 0,
+				),
 				'grouped' => array(
 					'master_id' => array(
 						'matches' => 1234,

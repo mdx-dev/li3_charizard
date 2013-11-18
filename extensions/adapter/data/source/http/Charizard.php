@@ -2,6 +2,7 @@
 
 namespace li3_charizard\extensions\adapter\data\source\http;
 
+use lithium\data\model\QueryException;
 use lithium\data\source\Http;
 use lithium\core\Libraries;
 
@@ -27,6 +28,14 @@ class Charizard extends Http {
 		);
 		parent::__construct($config + $defaults);
 		$this->_queryBuilder = $this->_instance('query');
+	}
+
+	public function create($query, array $options = array()) {
+		throw new QueryException("Create operations are not supported by this adapter.");
+	}
+
+	public function delete($query, array $options = array()) {
+		throw new QueryException("Delete operations are not supported by this adapter.");
 	}
 
 	protected function _normalizeFacets(&$stats) {
@@ -55,8 +64,23 @@ class Charizard extends Http {
 		//XXX Decoding this as an object to maintain compatibility with any existing
 		//    model _normalizeFacet methods.
 		$response = json_decode($response);
-		//XXX Is there anything useful we can do with non-array/object responses?
-		if (!is_object($response)) return $parsed;
+
+		if (
+			!is_object($response)
+			|| empty($response->responseHeader)
+		) {
+			throw new QueryException('Failed to read Solr response: `' . var_export($response, true) . '`.');
+		}
+
+		$responseHeader = $response->responseHeader;
+		if (
+			!isset($responseHeader->status)
+			|| $responseHeader->status !== 0
+		) {
+			$msg = isset($response->error->msg) ? $response->error->msg : '';
+			$code = isset($response->error->code) ? $response->error->code : '';
+			throw new QueryException("Solr error: code=`{$code}` msg=`{$msg}`.");
+		}
 
 		if (isset($response->grouped)) {
 			$names = array_keys(get_object_vars($response->grouped));
@@ -133,12 +157,21 @@ class Charizard extends Http {
 	public function cast($entity, array $data, array $options = array()) {
 		$model = $entity->model();
 		foreach ($data as $key => $val) {
-			if (!is_array($val) || empty($val['doclist']['docs'])) { continue; }
-			foreach ($val['doclist']['docs'] as $doc) {
-				$data[$key] = $this->item($model, $doc, array('class' => 'entity'));
+			if (!is_array($val)) continue;
+			if (!empty($val['doclist']['docs'])) {
+				//XXX The builder is hard-coded to limit groups to one element,
+				//    which is why we only use one doc here.
+				//TODO This seems like something that belongs in model-config / queries.
+				$data[$key] = $this->item($model, $val['doclist']['docs'][0], array('class' => 'entity'));
+			} else {
+				$data[$key] = $this->item($model, $val, array('class' => 'entity'));
 			}
 		}
 		return parent::cast($entity, $data, $options);
+	}
+
+	public function update($query, array $options = array()) {
+		throw new QueryException("Update operations are not supported by this adapter.");
 	}
 
 }
