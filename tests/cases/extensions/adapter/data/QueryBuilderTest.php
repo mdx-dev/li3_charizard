@@ -92,61 +92,63 @@ class QueryBuilderTest extends Unit {
 				'rows' => 15,
 				'offset' => 0,
 			),
-			'modelConfig' => array(
-				'str_fields' => array(
-					"disorder" => array(
-						"id_field" => "disorder_id",
-						"related" => array(
-							array(
-								"field" => "disorder_id",
-								"boost" => 1,
+			'source' => array(
+				'config' => array(
+					'str_fields' => array(
+						"disorder" => array(
+							"id_field" => "disorder_id",
+							"related" => array(
+								array(
+									"field" => "disorder_id",
+									"boost" => 1,
+									"append" => true,
+								),
+								array(
+									"field" => "field_specialty_id",
+									"boost" => 0,
+									"append" => false,
+								),
+								array(
+									"field" => "specialist_id",
+									"boost" => 0,
+									"append" => false,
+								),
+								array(
+									"field" => "related_disorder_id",
+									"boost" => 2,
+									"append" => false,
+								),
+								array(
+									"field" => "related_disorder",
+									"boost" => 2,
+									"append" => true,
+								),
+								array(
+									"field" => "field_specialty",
+									"boost" => 2,
+									"append" => true,
+								),
+								array(
+									"field" => "specialist",
+									"boost" => 2,
+									"append" => true,
+								)
+							),
+							"spell" => array(
+								"field" => "disorder_spell",
+								"boost" => 0.1,
+								"append" => true,
+								"dictionary" => "disorderspellcheck",
+							),
+							"autosuggest" => array(
+								"dictionary" => "disordertypeahead",
+								"field" => "disorder_autosuggest",
+								"boost" => 0.1,
 								"append" => true,
 							),
-							array(
-								"field" => "field_specialty_id",
-								"boost" => 0,
-								"append" => false,
+							"infix" => array(
+								"field" => "disorder_autosuggest",
 							),
-							array(
-								"field" => "specialist_id",
-								"boost" => 0,
-								"append" => false,
-							),
-							array(
-								"field" => "related_disorder_id",
-								"boost" => 2,
-								"append" => false,
-							),
-							array(
-								"field" => "related_disorder",
-								"boost" => 2,
-								"append" => true,
-							),
-							array(
-								"field" => "field_specialty",
-								"boost" => 2,
-								"append" => true,
-							),
-							array(
-								"field" => "specialist",
-								"boost" => 2,
-								"append" => true,
-							)
-						),
-						"spell" => array(
-							"field" => "disorder_spell",
-							"boost" => 0.1,
-							"append" => true,
-							"dictionary" => "disorderspellcheck",
-						),
-						"autosuggest" => array(
-							"dictionary" => "disordertypeahead",
-							"field" => "disorder_autosuggest",
-							"boost" => 0.1,
-							"append" => true,
-						),
-						"infix" => array(
-							"field" => "disorder_autosuggest",
 						),
 					),
 				),
@@ -199,47 +201,49 @@ class QueryBuilderTest extends Unit {
 			),
 			'rows' => 10,
 			'offset' => 0,
-			'modelConfig' => array(
-				'str_fields' => array(
-					"geo_zip_combo" => array(
-						"id_field" => "id",
-						"related" => array(
-							array(
-								"field" => "state",
-								"boost" => 10,
+			'source' => array(
+				'config' => array(
+					'str_fields' => array(
+						"geo_zip_combo" => array(
+							"id_field" => "id",
+							"related" => array(
+								array(
+									"field" => "state",
+									"boost" => 10,
+									"append" => true
+								),
+								array(
+									"field" => "city",
+									"boost" => 10,
+									"append" => true
+								),
+								array(
+									"field" => "zip",
+									"boost" => 10,
+									"append" => true
+								),
+								array(
+									"field" => "state_full",
+									"boost" => 10,
+									"append" => true
+								),
+								array(
+									"field" => "geo",
+									"boost" => 10,
+									"append" => false
+								),
+								array(
+									"field" => "geo_cc",
+									"boost" => 10,
+									"append" => false
+								)
+							),
+							"infix" => array(
+								"field" => "geo_zip_autosuggest",
+								"boost" => 0.5,
 								"append" => true
-							),
-							array(
-								"field" => "city",
-								"boost" => 10,
-								"append" => true
-							),
-							array(
-								"field" => "zip",
-								"boost" => 10,
-								"append" => true
-							),
-							array(
-								"field" => "state_full",
-								"boost" => 10,
-								"append" => true
-							),
-							array(
-								"field" => "geo",
-								"boost" => 10,
-								"append" => false
-							),
-							array(
-								"field" => "geo_cc",
-								"boost" => 10,
-								"append" => false
 							)
 						),
-						"infix" => array(
-							"field" => "geo_zip_autosuggest",
-							"boost" => 0.5,
-							"append" => true
-						)
 					),
 				),
 			),
@@ -337,69 +341,71 @@ class QueryBuilderTest extends Unit {
 			),
 			'rows' => 10,
 			'offset' => 0,
-			'modelConfig' => array(
-				"str_fields" => array(
-					"display_name" => array(
-						"id_field" => "master_id",
-						"related" => array(
-							array(
-								"field" => "name_combo",
-								"boost" => 2,
+			'source' => array(
+				'config' => array(
+					"str_fields" => array(
+						"display_name" => array(
+							"id_field" => "master_id",
+							"related" => array(
+								array(
+									"field" => "name_combo",
+									"boost" => 2,
+									"append" => true
+								),
+								array(
+									"field" => "first_name",
+									"boost" => 5,
+									"append" => true
+								),
+								array(
+									"field" => "middle_name",
+									"boost" => 3,
+									"append" => true
+								),
+								array(
+									"field" => "last_name",
+									"boost" => 7,
+									"append" => true
+								),
+								array(
+									"field" => "alias_first_name",
+									"boost" => 1,
+									"append" => true
+								),
+								array(
+									"field" => "alias_middle_name",
+									"boost" => 2,
+									"append" => true
+								),
+								array(
+									"field" => "alias_last_name",
+									"boost" => 3,
+									"append" => true
+								),
+								array(
+									"field" => "alias_suffix",
+									"boost" => 1,
+									"append" => true
+								)
+							),
+							"spell" => array(
+								"field" => "name_spell",
+								"boost" => 0.1,
+								"append" => true,
+								"dictionary" => "namespellcheck"
+							),
+							"autosuggest" => array(
+								"dictionary" => "nametypeahead",
+								"field" => "name_autosuggest",
+								"boost" => 0.1,
 								"append" => true
 							),
-							array(
-								"field" => "first_name",
-								"boost" => 5,
-								"append" => true
-							),
-							array(
-								"field" => "middle_name",
-								"boost" => 3,
-								"append" => true
-							),
-							array(
-								"field" => "last_name",
-								"boost" => 7,
-								"append" => true
-							),
-							array(
-								"field" => "alias_first_name",
-								"boost" => 1,
-								"append" => true
-							),
-							array(
-								"field" => "alias_middle_name",
-								"boost" => 2,
-								"append" => true
-							),
-							array(
-								"field" => "alias_last_name",
-								"boost" => 3,
-								"append" => true
-							),
-							array(
-								"field" => "alias_suffix",
-								"boost" => 1,
+							"infix" => array(
+								"field" => "name_autosuggest",
+								"boost" => 0.1,
 								"append" => true
 							)
 						),
-						"spell" => array(
-							"field" => "name_spell",
-							"boost" => 0.1,
-							"append" => true,
-							"dictionary" => "namespellcheck"
-						),
-						"autosuggest" => array(
-							"dictionary" => "nametypeahead",
-							"field" => "name_autosuggest",
-							"boost" => 0.1,
-							"append" => true
-						),
-						"infix" => array(
-							"field" => "name_autosuggest",
-							"boost" => 0.1,
-							"append" => true
-						)
 					),
 				),
 			),
@@ -576,63 +582,65 @@ class QueryBuilderTest extends Unit {
 				'rows' => 7,
 				'offset' => 0,
 			),
-			'modelConfig' => array(
-				"str_fields" => array(
-					"display_name" => array(
-						"id_field" => "master_id",
-						"related" => array(
-							array(
-								"field" => "name_combo",
-								"boost" => 2,
+			'source' => array(
+				'config' => array(
+					"str_fields" => array(
+						"display_name" => array(
+							"id_field" => "master_id",
+							"related" => array(
+								array(
+									"field" => "name_combo",
+									"boost" => 2,
+									"append" => true
+								)
+							),
+							"spell" => array(
+								"field" => "name_spell",
+								"boost" => 0.1,
+								"append" => true,
+								"dictionary" => "namespellcheck"
+							),
+							"autosuggest" => array(
+								"dictionary" => "nametypeahead",
+								"field" => "name_autosuggest",
+								"boost" => 0.1,
+								"append" => true
+							),
+							"infix" => array(
+								"field" => "name_autosuggest",
+								"boost" => 0.1,
 								"append" => true
 							)
 						),
-						"spell" => array(
-							"field" => "name_spell",
-							"boost" => 0.1,
-							"append" => true,
-							"dictionary" => "namespellcheck"
-						),
-						"autosuggest" => array(
-							"dictionary" => "nametypeahead",
-							"field" => "name_autosuggest",
-							"boost" => 0.1,
-							"append" => true
-						),
-						"infix" => array(
-							"field" => "name_autosuggest",
-							"boost" => 0.1,
-							"append" => true
-						)
-					),
-					"name_combo" => array(
-						"id_field" => "master_id",
-						"related" => array(
-							array(
-								"field" => "display_name",
-								"boost" => 2,
+						"name_combo" => array(
+							"id_field" => "master_id",
+							"related" => array(
+								array(
+									"field" => "display_name",
+									"boost" => 2,
+									"append" => true
+								)
+							),
+							"spell" => array(
+								"field" => "name_spell",
+								"boost" => 0.1,
+								"append" => true,
+								"dictionary" => "namespellcheck"
+							),
+							"autosuggest" => array(
+								"dictionary" => "nametypeahead",
+								"field" => "name_combo_autosuggest",
+								"boost" => 0.1,
+								"append" => true
+							),
+							"infix" => array(
+								"field" => "name_combo_autosuggest",
+								"boost" => 0.1,
 								"append" => true
 							)
-						),
-						"spell" => array(
-							"field" => "name_spell",
-							"boost" => 0.1,
-							"append" => true,
-							"dictionary" => "namespellcheck"
-						),
-						"autosuggest" => array(
-							"dictionary" => "nametypeahead",
-							"field" => "name_combo_autosuggest",
-							"boost" => 0.1,
-							"append" => true
-						),
-						"infix" => array(
-							"field" => "name_combo_autosuggest",
-							"boost" => 0.1,
-							"append" => true
 						)
 					)
-				)
+				),
 			),
 		);
 
