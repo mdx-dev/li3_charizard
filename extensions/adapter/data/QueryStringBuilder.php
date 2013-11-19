@@ -33,6 +33,12 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function selectToString($values, array $config = array()) {
+		if(empty($values)){
+			return array(
+				'key' => 'q',
+				'value' => '*:*',
+			);
+		}
 		foreach ($values as $key => &$value) {
 			if ($key === 'display_name') {
 				$value = static::comboKeyValue($key, $value, $config);
@@ -131,23 +137,27 @@ class QueryStringBuilder extends StaticObject {
 			return;
 		}
 		$filterFields = array();
-		foreach ($values['field'] as $key => $value) {
-			if (!$value) {
-				continue;
+		if(isset($values['field'])){
+			foreach ($values['field'] as $key => $value) {
+				if (!$value) {
+					continue;
+				}
+				$filterFields[] = array(
+					'key' => 'fq',
+					'value' => "{!tag={$key}}{$key}:{$value}",
+				);
 			}
-			$filterFields[] = array(
-				'key' => 'fq',
-				'value' => "{!tag={$key}}{$key}:{$value}",
-			);
 		}
-		foreach ($values['facet'] as $key => $value) {
-			if (!$value) {
-				continue;
+		if(isset($values['facet'])){
+			foreach ($values['facet'] as $key => $value) {
+				if (!$value) {
+					continue;
+				}
+				$filterFields[] = array(
+					'key' => 'fq',
+					'value' => "{!tag={$key}}{$key}:{$value}",
+				);
 			}
-			$filterFields[] = array(
-				'key' => 'fq',
-				'value' => "{!tag={$key}}{$key}:{$value}",
-			);
 		}
 		return $filterFields;
 	}
