@@ -126,16 +126,21 @@ class QueryStringBuilder extends StaticObject {
 		}
 	}
 
-
-	/**
-	 * TODO why are we using `!tag=`?
-	 */
 	public static function filterToString($values){
-		if (empty($values['field'])) {
+		if (empty($values['field']) && empty($values['facet'])) {
 			return;
 		}
 		$filterFields = array();
 		foreach ($values['field'] as $key => $value) {
+			if (!$value) {
+				continue;
+			}
+			$filterFields[] = array(
+				'key' => 'fq',
+				'value' => "{!tag={$key}}{$key}:{$value}",
+			);
+		}
+		foreach ($values['facet'] as $key => $value) {
 			if (!$value) {
 				continue;
 			}
