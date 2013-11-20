@@ -17,12 +17,7 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function offsetToString($value) {
-		if ($value > 0) {
-			return array(
-				'key' => 'group.offset',
-				'value' => $value,
-			);
-		}
+		return static::startToString($value);
 	}
 
 	public static function rowsToString($value) {
