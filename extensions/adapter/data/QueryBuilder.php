@@ -80,10 +80,10 @@ class QueryBuilder extends Object {
 		//XXX hard-coding query parser to Extended DisMax. It looks like all the
 		//    sample queries use it.
 		$raw[] = array('key' => 'defType', 'value' => 'edismax');
-		return static::validate($builder::compile($raw));
+		return static::cleanse($builder::compile($raw));
 	}
 
-	public static function validate($queryString){
+	public static function cleanse($queryString){
 		//there can not be more than 1 q
 		if(substr_count($queryString, "&q=") > 1){
 			//if there is a geo hash query make sure that is the first q
@@ -137,7 +137,6 @@ class QueryBuilder extends Object {
 		$queryString = trim($queryString, '&');
 		return $queryString;
 	}
-
 }
 
 ?>
