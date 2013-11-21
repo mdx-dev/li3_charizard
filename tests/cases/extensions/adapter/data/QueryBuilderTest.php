@@ -882,7 +882,7 @@ class QueryBuilderTest extends Unit {
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
-	function testValidateMultipleQ(){
+	function testCleanMultipleQ(){
 		$queryString =  'select?wt=json&' .
 			'q=' . urlencode('foo:aaa') . '&' .
 			'fq=' . urlencode('bar:bbc') . '&' .
@@ -895,10 +895,10 @@ class QueryBuilderTest extends Unit {
 			'sort=' .urlencode('score asc') . '&' .
 			'fq=' .urlencode('baz:[1 TO *]'). '&' .
 			'rows=' . urlencode('17');
-		$this->assertIdentical($expected, QueryBuilder::validate($queryString));
+		$this->assertIdentical($expected, QueryBuilder::cleanse($queryString));
 	}
 
-	function testValidateMultipleQWithGeoHash(){
+	function testCleanMultipleQWithGeoHash(){
 		$queryString =  'select?wt=json&' .
 			'q=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1'). '&' .
@@ -911,8 +911,29 @@ class QueryBuilderTest extends Unit {
 			'sort=' .urlencode('score asc') . '&' .
 			'fq=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
 			'rows=' . urlencode('7');
-		$this->assertIdentical($expected, QueryBuilder::validate($queryString));
+		$this->assertIdentical($expected, QueryBuilder::cleanse($queryString));
 	}
+
+	function testCleanFilterExclusions(){
+		$queryString = 'select?wt=json&' .
+			'q=' . urlencode('foo:aaa') . '&' .
+			'fq=' . urlencode('{!tag=bar}bar:bbc') . '&' .
+			'fq=' . urlencode('{!tag=gender}gender:1') . '&' .
+			'facet=' . urlencode('true') . '&' .
+			'facet.field=' . urlencode('{!key=gender}gender') . '&' .
+			'facet.field=' . urlencode('{!key=is_patients_choice}is_patients_choice');
+
+		$expected = 'select?wt=json&' .
+			'q=' . urlencode('foo:aaa') . '&' .
+			'fq=' . urlencode('{!tag=bar}bar:bbc') . '&' .
+			'fq=' . urlencode('{!tag=gender}gender:1') . '&' .
+			'facet=' . urlencode('true') . '&' .
+			'facet.field=' . urlencode('{!key=gender ex=gender}gender'). '&' .
+			'facet.field=' . urlencode('{!key=is_patients_choice}is_patients_choice');
+
+			$this->assertIdentical($expected, QueryBuilder::cleanse($queryString));
+	}
+
 
 }
 
