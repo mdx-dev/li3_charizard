@@ -7,6 +7,46 @@ use li3_charizard\extensions\adapter\data\QueryBuilder;
 
 class QueryBuilderTest extends Unit {
 
+	/**
+	 * Returns a representation of the $queryString in an array like:
+	 *  array(
+	 *    array('a_param', 'something'),
+	 *    array('another_param', 'another'),
+	 *    array('a_param', 'completely different'),
+	 *  )
+	 * This preserves both the existence of multiple same-named parameters and
+	 * the ordering of all parameters.
+	 *
+	 * @param string $queryString
+	 * @param array $options
+	 */
+	protected function parseQuery($queryString, array $options = array()) {
+		$parsed = array();
+		foreach (explode('&', $queryString) as $param) {
+			list($name, $value) = explode('=', $param);
+			$parsed[] = array(urldecode($name), urldecode($value));
+		}
+		return $parsed;
+	}
+
+	/**
+	 * opposite of #parseQuery()
+	 *
+	 * @param array $params
+	 * @param array $options
+	 * @return mixed query string or false on error.
+	 */
+	protected function buildQuery(array $params, array $options = array()) {
+		$queryParts = array();
+		foreach ($params as $param) {
+			if (!is_array($param) || 2 !== count($param)) return false;
+			if (!isset($param[0]) || !isset($param[1])) return false;
+			if (!strlen($param[0])) return false;
+			$queryParts[] = urlencode($param[0]) . '=' . urlencode($param[1]);
+		}
+		return implode('&', $queryParts);
+	}
+
 	public function setUp() {
 		$this->query = $this->createQueryBuilder();
 	}
@@ -879,6 +919,138 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!bbox pt=36.1537,-95.9926 sfield=geo d=16.09344}') . '' .
 			'&rows=' . urlencode('10') .
 			'&defType=edismax';
+		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
+	}
+
+	function testProviderSpecialtySearchPage2() {
+		$data = array(
+			'select' => array(
+				'specialist' => '',
+				'specialist_id' => 110,
+				'standing_code' => 'P',
+			),
+			'fields' => array(
+				'score',
+				'provider_id',
+				'master_id',
+				'geo',
+				'specialist_id',
+				'standing_code',
+				'provider_practice_id',
+				'disorder_id',
+				'name_combo',
+				'first_name',
+				'middle_name',
+				'last_name',
+				'alias_first_name',
+				'alias_middle_name',
+				'alias_last_name',
+				'alias_suffix',
+				'display_name',
+			),
+			'facet' => array(
+				'field' => array(
+					'us_educated' => 'us_educated',
+					'is_abms_certified' => 'is_abms_certified',
+					'is_top_doctor' => 'is_top_doctor',
+					'is_patients_choice' => 'is_patients_choice',
+					'degree' => 'degree',
+					'gender' => 'gender',
+					'language_id' => 'language_id',
+				),
+				'range' => array(
+					array(
+						'field' => 'experience',
+						'start' => 5,
+						'end' => 1000,
+						'gap' => 5,
+						'upper' => null,
+					),
+					array(
+						'field' => 'avg_wait_time',
+						'start' => 0,
+						'end' => 1000,
+						'gap' => 10,
+						'upper' => 1,
+						'lower' => null,
+					),
+				),
+				'mincount' => 1,
+			),
+			'filter' => array(
+				'facet' => array(),
+				'field' => array(
+					'provider_type_id' => 1,
+				),
+				'query' => array(),
+			),
+			'sort' => array(
+				'physician_algorithm_quality' => 'desc',
+				'geodist(geo,40.694599,-73.990638)' => 'asc',
+			),
+			'boost' => array(
+				'display_name' => 0.9,
+				'expertise' => 0.8,
+			),
+			'groupby' => array(
+				'master_id',
+			),
+			'geo' => array(
+				'_distance_sort' => 1,
+				'field' => 'geo',
+				'latlong' => '40.694599,-73.990638',
+				'radius' => 16.09344,
+			),
+			'rows' => 10,
+			'offset' => 10,
+		);
+
+		$expectedParams = array(
+			array('wt', 'json'),
+			//array('q', 'specialist_id:110 AND  standing_code:P'),
+			array('q', 'specialist_id:110 AND standing_code:P'), // remove extra space
+			array('fl', 'score,provider_id,master_id,geo,specialist_id,standing_code,provider_practice_id,disorder_id,name_combo,first_name,middle_name,last_name,alias_first_name,alias_middle_name,alias_last_name,alias_suffix,display_name'),
+			array('start', '10'),
+			array('fq', '{!tag=provider_type_id}provider_type_id:1'),
+			//array('sort', 'physician_algorithm_quality desc,geodist(geo,40.694599,-73.990638) asc'),
+			array('sort', 'physician_algorithm_quality desc, geodist(geo,40.694599,-73.990638) asc'), // add space after ","
+			array('group', 'true'),
+			array('group.limit', '1'),
+			array('group.ngroups', 'true'),
+			array('group.cache.percent', '0'),
+			array('group.truncate', 'true'),
+			array('group.facet', 'false'),
+			array('group.field', 'master_id'),
+			array('facet', 'true'),
+			//array('facet.missing', 'false'),
+			array('facet.field', '{!key=us_educated}us_educated'),
+			array('facet.field', '{!key=is_abms_certified}is_abms_certified'),
+			array('facet.field', '{!key=is_top_doctor}is_top_doctor'),
+			array('facet.field', '{!key=is_patients_choice}is_patients_choice'),
+			array('facet.field', '{!key=degree}degree'),
+			array('facet.field', '{!key=gender}gender'),
+			array('facet.field', '{!key=language_id}language_id'),
+			array('facet.range', '{!key=experience}experience'),
+			array('f.experience.facet.range.start', '5'),
+			array('f.experience.facet.range.end', '1000'),
+			array('f.experience.facet.range.gap', '5'),
+			array('f.experience.facet.range.upper', ''), // added
+			//array('f.experience.facet.range.other', 'none'),
+			//array('f.experience.facet.range.include', 'lower'),
+			array('facet.range', '{!key=avg_wait_time}avg_wait_time'),
+			array('f.avg_wait_time.facet.range.start', '0'),
+			array('f.avg_wait_time.facet.range.end', '1000'),
+			array('f.avg_wait_time.facet.range.gap', '10'),
+			array('f.avg_wait_time.facet.range.upper', '1'), // added
+			array('f.avg_wait_time.facet.range.lower', ''), // added
+			//array('f.avg_wait_time.facet.range.other', 'none'),
+			//array('f.avg_wait_time.facet.range.include', 'upper'),
+			array('facet.mincount', '1'),
+			array('fq', '{!bbox pt=40.694599,-73.990638 sfield=geo d=16.09344}'),
+			array('rows', '10'),
+			array('defType', 'edismax'),
+		);
+		$expected = 'select?' . $this->buildQuery($expectedParams);
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
 	}
 
