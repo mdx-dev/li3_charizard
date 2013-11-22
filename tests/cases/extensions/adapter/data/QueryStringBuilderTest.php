@@ -123,7 +123,7 @@ class QueryStringBuilderTest extends Unit {
 	public function testSuggestions() {
 		$value = array(
 			'typeahead_field' => 'display_name',
-			'typeahead_phrase' => 'foo',
+			'typeahead_phrase' => 'foo bar',
 		);
 		$config = array(
 			'str_fields' => array(
@@ -193,9 +193,9 @@ class QueryStringBuilderTest extends Unit {
 		);
 		$expected = array(
 			'key' => 'q',
-			'value' => '( name_autosuggest:foo^0.1 OR (name_combo:foo^2 OR first_name:foo^5 OR middle_name:foo^3'.
-				' OR last_name:foo^7 OR alias_first_name:foo^1 OR alias_middle_name:foo^2 OR alias_last_name:foo^3'.
-				' OR alias_suffix:foo^1) OR name_autosuggest:foo^0.1)',
+			'value' => '( name_autosuggest:(+foo +bar)^0.1 OR (name_combo:(+foo +bar)^2 OR first_name:(+foo +bar)^5 OR middle_name:(+foo +bar)^3'.
+				' OR last_name:(+foo +bar)^7 OR alias_first_name:(+foo +bar)^1 OR alias_middle_name:(+foo +bar)^2 OR alias_last_name:(+foo +bar)^3'.
+				' OR alias_suffix:(+foo +bar)^1) OR name_autosuggest:(+foo +bar)^0.1)',
 		);
 		$this->assertIdentical($expected, QueryStringBuilder::suggestionsToString($value, $config));
 	}
