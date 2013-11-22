@@ -248,6 +248,10 @@ class QueryStringBuilder extends StaticObject {
 		if (empty($config['str_fields'][$key]['related'])) {
 			return '';
 		}
+		//if the value has a space in it, convert to a solr friendly value
+		if(is_string($value) && substr_count($value, ' ')){
+			$value = '(+' . str_replace(' ', ' +', $value) . ')';
+		}
 
 		$related = $config['str_fields'][$key]['related'];
 		$relatedArray = array();
