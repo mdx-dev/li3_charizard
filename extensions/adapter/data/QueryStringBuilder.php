@@ -128,7 +128,10 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function filterToString($values){
-		if (empty($values['field']) && empty($values['facet'])) {
+		if (empty($values['field']) &&
+				empty($values['facet']) &&
+				empty($values['query']) &&
+				empty($values['facet_query'])) {
 			return;
 		}
 		$filterFields = array();
@@ -152,6 +155,31 @@ class QueryStringBuilder extends StaticObject {
 					'key' => 'fq',
 					'value' => "{!tag={$key}}{$key}:{$value}",
 				);
+			}
+		}
+		if(isset($values['query'])){
+			foreach ($values['query'] as $key => $value) {
+				$filterFields[] = array(
+					'key' => 'fq',
+					'value' => "{!tag={$key}}$value",
+				);
+			}
+		}
+		if(isset($values['facet_query'])){
+			foreach ($values['facet_query'] as $key => $value) {
+				if(isset($value['query'])){
+					$filterFields[] = array(
+						'key' => 'fq',
+						'value' => "{!tag={$key}}{$value['query']}",
+					);
+				}
+				if(isset($value['facet']['range'])){
+					$filterFields[] = array(
+						'key' => 'facet.range',
+						'value' => "{!tag={$key} ex={$key}}{$key}",
+					);
+					$filterFields[] = static::facetToString($value['facet']);
+				}
 			}
 		}
 		return $filterFields;
