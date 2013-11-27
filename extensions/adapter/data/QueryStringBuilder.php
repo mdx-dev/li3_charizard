@@ -290,25 +290,32 @@ class QueryStringBuilder extends StaticObject {
 			$relatedArray[] = $relData;
 		}
 		$relatedData = implode(' OR ' , $relatedArray);
-		if (empty($config['str_fields'][$key]['infix']) &&  empty($config['str_fields'][$key]['autosuggest'])) {
+
+		if(isset($config['str_fields'][$key]['infix']) ||
+				isset($config['str_fields'][$key]['autosuggest'])){
+
+			$autosuggestData = $infixData = "";
+
+			if(isset($config['str_fields'][$key]['infix'])){
+				$infix = $config['str_fields'][$key]['infix'];
+				$infixData = ' OR ' . $infix['field'] . ':' . $value;
+				if (!empty($infix['boost'])) {
+					$infixData .= '^' . $infix['boost'];
+				}
+			}
+
+			if(isset($config['str_fields'][$key]['autosuggest'])){
+				$autosuggest = $config['str_fields'][$key]['autosuggest'];
+				$autosuggestData = ' ' . $autosuggest['field'] . ':' . $value;
+				if (!empty($autosuggest['boost'])) {
+					$autosuggestData .= '^' . $autosuggest['boost'];
+				}
+				$autosuggestData .= ' OR ';
+			}
+			return '(' . $autosuggestData. '(' . $relatedData . ')' . $infixData . ')';
+		}else{
 			return '(' . $relatedData . ')';
 		}
-		$infix = $config['str_fields'][$key]['infix'];
-		$infixData = ' OR ' . $infix['field'] . ':' . $value;
-		if (!empty($infix['boost'])) {
-			$infixData .= '^' . $infix['boost'];
-		}
-		$autosuggestData = '';
-		if(isset($config['str_fields'][$key]['autosuggest'])){
-			$autosuggest = $config['str_fields'][$key]['autosuggest'];
-			$autosuggestData = ' ' . $autosuggest['field'] . ':' . $value;
-			if (!empty($autosuggest['boost'])) {
-				$autosuggestData .= '^' . $autosuggest['boost'];
-			}
-			$autosuggestData .= ' OR ';
-		}
-
-		return '(' . $autosuggestData. '(' . $relatedData . ')' . $infixData . ')';
 	}
 
 
