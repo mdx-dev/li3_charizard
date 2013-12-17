@@ -381,11 +381,6 @@ class QueryStringBuilder extends StaticObject {
 		return implode('&', $segments);
 	}
 
-	public static function formatDataForWrite(array $data) {
-		pr($data);
-
-	}
-
 }
 
 ?>
