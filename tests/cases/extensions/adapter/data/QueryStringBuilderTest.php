@@ -77,20 +77,20 @@ class QueryStringBuilderTest extends Unit {
 
 	public function testGroupBy() {
 		$value = array(
-			'foo',
-			'bar',
+			'field' => array('foo', 'bar'),
 		);
 		$expected = array(
 			array('key' => 'group', 'value' => 'true'),
+			array('key' => 'group.field', 'value' => 'foo'),
+			array('key' => 'group.field', 'value' => 'bar'),
 			array('key' => 'group.limit', 'value' => '1'),
 			array('key' => 'group.ngroups', 'value' => 'true'),
 			array('key' => 'group.cache.percent', 'value' => '0'),
 			array('key' => 'group.truncate', 'value' => 'true'),
-			array('key' => 'group.facet', 'value' => 'false'),
-			array('key' => 'group.field', 'value' => 'foo'),
-			array('key' => 'group.field', 'value' => 'bar'),
+			array('key' => 'group.facet', 'value' => 'false')
 		);
-		$this->assertIdentical($expected, QueryStringBuilder::groupByToString($value));
+		$result = QueryStringBuilder::groupByToString($value);
+		$this->assertIdentical(json_encode($expected), json_encode($result));
 	}
 
 	public function testFieldToStringSimple() {
@@ -564,7 +564,6 @@ class QueryStringBuilderTest extends Unit {
 		$result = QueryStringBuilder::facetToString($values);
 		$this->assertIdentical(json_encode($expected), json_encode($result));
 	}
-
 
 }
 

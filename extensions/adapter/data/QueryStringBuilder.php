@@ -76,21 +76,47 @@ class QueryStringBuilder extends StaticObject {
 	}
 
 	public static function groupbyToString($values) {
-		$items = array(
-			array('key' => 'group', 'value' => 'true'),
-			array('key' => 'group.limit', 'value' => '1'),
-			array('key' => 'group.ngroups', 'value' => 'true'),
-			array('key' => 'group.cache.percent', 'value' => '0'),
-			array('key' => 'group.truncate', 'value' => 'true'),
-			array('key' => 'group.facet', 'value' => 'false'),
-		);
-		foreach ($values as $value) {
-			$items[] = array(
-				'key' => 'group.field',
-				'value' => $value,
+		if(isset($values) && is_array($values)){
+			$items = array(
+				array('key' => 'group', 'value' => 'true')
 			);
+			//set defaults
+			$groupbyItems = array('group.limit' => 1,
+														'group.ngroups' => 'true',
+														'group.cache.percent' => '0',
+														'group.truncate' => 'true',
+														'group.facet' => 'false'
+			);
+			foreach($values as $key => $value){				
+				if($key == 'field' && is_array($value)){
+					//handle group.fields
+					foreach ($value as $field) {
+						$items[] = array(
+							'key' => 'group.field',
+							'value' => $field,
+						);
+					}				
+				}elseif($key == 'sort' && is_array($value)){
+					//handle group.sort
+					$vals=array();
+					foreach ($value as $field => $order) {
+						$vals[] ="{$field} {$order}";
+					}
+					$items[] = array(
+						'key' => 'group.sort',
+						'value' => implode(',', $vals)
+					);
+				}else{
+					//everything else (replace defaults)
+					$groupbyItems[$key] = $value;
+				}
+			}
+
+			foreach ($groupbyItems as $key => $value) {
+				$items[] = array('key' => $key, 'value' => $value);
+			}
+			return $items;
 		}
-		return $items;
 	}
 
 	/**
@@ -353,6 +379,11 @@ class QueryStringBuilder extends StaticObject {
 			}
 		}
 		return implode('&', $segments);
+	}
+
+	public static function formatDataForWrite(array $data) {
+		pr($data);
+
 	}
 
 }

@@ -127,7 +127,7 @@ class QueryBuilderTest extends Unit {
 					array('score' => 'desc'),
 				),
 				'groupby' => array(
-					'disorder',
+					'field' => array('disorder'),
 				),
 				'rows' => 15,
 				'offset' => 0,
@@ -198,12 +198,12 @@ class QueryBuilderTest extends Unit {
 			'q=' . urlencode('( disorder_autosuggest:Gas^0.1 OR (disorder_id:Gas^1 OR related_disorder:Gas^2 OR field_specialty:Gas^2 OR specialist:Gas^2) OR disorder_autosuggest:Gas)') . '&' .
 			'sort=' . urlencode('score desc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('disorder') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('disorder') . '&' .
 			'rows=' . urlencode('15') .
 			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
@@ -236,8 +236,7 @@ class QueryBuilderTest extends Unit {
 				array('score' => 'desc'),
 			),
 			'groupby' => array(
-				'city',
-				'state',
+				'field' => array('state_city'),
 			),
 			'rows' => 10,
 			'offset' => 0,
@@ -293,13 +292,12 @@ class QueryBuilderTest extends Unit {
 			'fl=' . urlencode('geo_zip_combo,state,city,zip,state_full,geo,geo_cc,geo_zip_autosuggest') . '&' .
 			'sort=' . urlencode('pop desc, score desc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('state_city') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('city') . '&' .
-			'group.field=' . urlencode('state') . '&' .
 			'rows=' . urlencode('10') .
 			'&defType=edismax';
 		$this->assertIdentical($expected, $this->query->import($data)->to('string'));
@@ -371,7 +369,7 @@ class QueryBuilderTest extends Unit {
 				'expertise' => 0.8,
 			),
 			'groupby' => array(
-				'master_id',
+				'field' => array('master_id'),
 			),
 			'geo' => array(
 				'_distance_sort' => 1,
@@ -457,12 +455,12 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1') . '&' .
 			'sort=' . urlencode('geodist(geo,40.694599,-73.990638) asc, score desc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('master_id') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('master_id') . '&' .
 			'facet=' . urlencode('true') . '&' .
 			'facet.field=' . urlencode('{!key=us_educated}us_educated') . '&' .
 			'facet.field=' . urlencode('{!key=is_abms_certified}is_abms_certified') . '&' .
@@ -518,7 +516,7 @@ class QueryBuilderTest extends Unit {
 				'random_1383842845' => 'asc',
 			),
 			'groupby' => array(
-				'master_id',
+				'field' => array('master_id'),
 			),
 			'geo' => array(
 				'_distance_sort' => 1,
@@ -535,12 +533,12 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1') . '&' .
 			'sort=' . urlencode('random_1383842845 asc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('master_id') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('master_id') . '&' .
 			'fq=' . urlencode('{!bbox pt=40.6689264,-73.9797357 sfield=geo d=48.28032}') . '&' .
 			'rows=' . urlencode('6') .
 			'&defType=edismax';
@@ -611,7 +609,7 @@ class QueryBuilderTest extends Unit {
 					'_distance_sort' => 'asc',
 				),
 				'groupby' => array(
-					'master_id',
+					'field' => array('master_id'),
 				),
 				'geo' => array(
 					'_distance_sort' => 'hash',
@@ -690,12 +688,12 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1') . '&' .
 			'sort=' . urlencode('score asc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('master_id') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('master_id') . '&' .
 			'fq=' . urlencode('( name_combo_autosuggest:Todd^0.1 OR (display_name:Todd^2) OR name_combo_autosuggest:Todd^0.1)') . '&' .
 			'rows=' . urlencode('7') .
 			'&defType=edismax';
@@ -762,7 +760,7 @@ class QueryBuilderTest extends Unit {
 				'expertise' => 0.8,
 			),
 			'groupby' => array(
-				'master_id',
+				'field' => array('master_id'),
 			),
 			'geo' => array(
 				'_distance_sort' => 1,
@@ -781,12 +779,12 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1') . '&' .
 			'sort=' . urlencode('physician_algorithm_quality desc, geodist(geo,36.1537,-95.9926) asc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('master_id') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('master_id') . '&' .
 			'facet=' . urlencode('true') . '&' .
 			'facet.field=' . urlencode('{!key=us_educated}us_educated') . '&' .
 			'facet.field=' . urlencode('{!key=is_abms_certified}is_abms_certified') . '&' .
@@ -873,7 +871,7 @@ class QueryBuilderTest extends Unit {
 				'expertise' => 0.8,
 			),
 			'groupby' => array(
-				'master_id',
+				'field' => array('master_id'),
 			),
 			'geo' => array(
 				'_distance_sort' => 1,
@@ -890,12 +888,12 @@ class QueryBuilderTest extends Unit {
 			'fq=' . urlencode('{!tag=provider_type_id}provider_type_id:1') . '&' .
 			'sort=' . urlencode('score desc, physician_algorithm_quality desc, geodist(geo,36.1537,-95.9926) asc') . '&' .
 			'group=' . urlencode('true') . '&' .
+			'group.field=' . urlencode('master_id') . '&' .
 			'group.limit=' . urlencode('1') . '&' .
 			'group.ngroups=' . urlencode('true') . '&' .
 			'group.cache.percent=' . urlencode('0') . '&' .
 			'group.truncate=' . urlencode('true') . '&' .
 			'group.facet=' . urlencode('false') . '&' .
-			'group.field=' . urlencode('master_id') . '&' .
 			'facet=' . urlencode('true') . '&' .
 			'facet.field=' . urlencode('{!key=us_educated}us_educated') . '&' .
 			'facet.field=' . urlencode('{!key=is_abms_certified}is_abms_certified') . '&' .
@@ -993,7 +991,7 @@ class QueryBuilderTest extends Unit {
 				'expertise' => 0.8,
 			),
 			'groupby' => array(
-				'master_id',
+				'field' => array('master_id'),
 			),
 			'geo' => array(
 				'_distance_sort' => 1,
@@ -1015,12 +1013,12 @@ class QueryBuilderTest extends Unit {
 			//array('sort', 'physician_algorithm_quality desc,geodist(geo,40.694599,-73.990638) asc'),
 			array('sort', 'physician_algorithm_quality desc, geodist(geo,40.694599,-73.990638) asc'), // add space after ","
 			array('group', 'true'),
+			array('group.field', 'master_id'),
 			array('group.limit', '1'),
 			array('group.ngroups', 'true'),
 			array('group.cache.percent', '0'),
 			array('group.truncate', 'true'),
 			array('group.facet', 'false'),
-			array('group.field', 'master_id'),
 			array('facet', 'true'),
 			//array('facet.missing', 'false'),
 			array('facet.field', '{!key=us_educated}us_educated'),
