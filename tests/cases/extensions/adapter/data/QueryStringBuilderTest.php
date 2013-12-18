@@ -83,7 +83,7 @@ class QueryStringBuilderTest extends Unit {
 			array('key' => 'group', 'value' => 'true'),
 			array('key' => 'group.field', 'value' => 'foo'),
 			array('key' => 'group.field', 'value' => 'bar'),
-			array('key' => 'group.limit', 'value' => '1'),
+			array('key' => 'group.limit', 'value' => 1),
 			array('key' => 'group.ngroups', 'value' => 'true'),
 			array('key' => 'group.cache.percent', 'value' => '0'),
 			array('key' => 'group.truncate', 'value' => 'true'),
