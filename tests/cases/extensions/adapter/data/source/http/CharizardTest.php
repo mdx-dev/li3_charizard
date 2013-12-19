@@ -8,6 +8,7 @@ use lithium\data\model\Query;
 use lithium\data\collection\DocumentSet;
 use li3_charizard\extensions\adapter\data\source\http\charizard\Mock as Charizard;
 use li3_charizard\extensions\adapter\data\queryBuilder\Mock as QueryBuilder;
+use li3_charizard\extensions\net\http\RawService;
 use lithium\net\http\service\Mock as Service;
 
 class CharizardTest extends Unit {
@@ -15,6 +16,10 @@ class CharizardTest extends Unit {
 	public function setUp() {
 		Mocker::register();
 	}
+
+	protected $_testConfig = array(
+		'instance' => 'foo',
+	);
 
 	protected function _createObjects($options = array()) {
 		$options += array(
@@ -43,6 +48,61 @@ class CharizardTest extends Unit {
 		$this->charizard->connection = new Service();
 		$this->charizard->_queryBuilder = $this->queryBuilder;
 		$this->charizard->applyFilter('item', function() { return true; });
+	}
+
+	public function testUpdatePayload() {
+		$char = new Charizard($this->_testConfig);
+		$conn = new RawService();
+		$conn->applyFilter('send', function($self, $params, $chain) use ($conn) {
+			extract($params);
+			$options += array('return' => 'body');
+			$request = $conn->_request($method, $path, $data, $options);
+			$conn->last = (object) compact('request');
+			return array();
+		});
+		$char->connection = $conn;
+		$payload = <<<'EOD'
+{
+	"add": {
+		"commitWithin": 5000,
+		"overwrite": true,
+		"doc": {
+			"compositeKey": "BLAH-BL",
+			"city": "blah",
+			"state": "BL"
+		}
+	},
+	"add": {
+		"doc": {
+			"compositeKey": "BLAH-BL",
+			"city": {"set": "Blah"}
+		}
+	},
+	"commit": {},
+	"delete": {
+		"commitWithin": 15000,
+		"compositeKey": "BLAH-BL"
+	},
+}
+EOD;
+		$query = new Query(array(
+			'type' => 'update',
+			'source' => 'a_core_name',
+			'data' => array('payload' => $payload),
+		));
+		$char->update($query);
+		$result = (string) $char->connection->last->request;
+		$expected = <<<EOD
+POST /foo/a_core_name/update HTTP/1.1
+Host: localhost
+Connection: Close
+User-Agent: Mozilla/5.0
+Content-Type: application/json
+Content-Length: 314
+
+{$payload}
+EOD;
+		$this->assertEqual($expected, $result);
 	}
 
 	public function testPath() {

@@ -13,7 +13,7 @@ class Charizard extends Http {
 	protected $_queryBuilder = null;
 
 	protected $_classes = array(
-		'service' => 'lithium\net\http\Service',
+		'service' => 'li3_charizard\extensions\net\http\RawService',
 		'entity' => 'lithium\data\entity\Document',
 		'set' => 'lithium\data\collection\DocumentSet',
 		'array' => 'lithium\data\collection\DocumentArray',
@@ -31,7 +31,7 @@ class Charizard extends Http {
 	}
 
 	public function create($query, array $options = array()) {
-		throw new QueryException("Create operations are not supported by this adapter.");
+		return $this->update($query, $options);
 	}
 
 	public function delete($query, array $options = array()) {
@@ -171,7 +171,20 @@ class Charizard extends Http {
 	}
 
 	public function update($query, array $options = array()) {
-		throw new QueryException("Update operations are not supported by this adapter.");
+		$params = $query->export($this, array('keys'=> array('source', 'data')));
+		$data = $params['data'];
+		if ($query->entity()) $data = $data['update'];
+		if (!array_key_exists('payload', $data)) {
+			throw new \InvalidArgumentException('Update missing required `payload`.');
+		}
+		$path = $this->_config['instance'] . '/' . $params['source'] . '/update';
+		$service_opts = array(
+			'type' => 'application/json',
+		);
+		$response = $this->connection->post($path, $data['payload'], $service_opts);
+		if (!isset($response['responseHeader']['status'])) return false;
+		if (0 !== $response['responseHeader']['status']) return false;
+		return true;
 	}
 
 }
