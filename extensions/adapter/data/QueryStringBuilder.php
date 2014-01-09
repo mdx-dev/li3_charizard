@@ -87,7 +87,7 @@ class QueryStringBuilder extends StaticObject {
 														'group.truncate' => 'true',
 														'group.facet' => 'false'
 			);
-			foreach($values as $key => $value){				
+			foreach($values as $key => $value){
 				if($key == 'field' && is_array($value)){
 					//handle group.fields
 					foreach ($value as $field) {
@@ -95,7 +95,7 @@ class QueryStringBuilder extends StaticObject {
 							'key' => 'group.field',
 							'value' => $field,
 						);
-					}				
+					}
 				}elseif($key == 'sort' && is_array($value)){
 					//handle group.sort
 					$vals=array();
@@ -226,7 +226,7 @@ class QueryStringBuilder extends StaticObject {
 	 * @return array $facetParameters
 	 */
 	public static function facetToString($values){
-		$facetOptions = array('field', 'range', 'query', 'threads');
+		$facetOptions = array('field', 'range', 'query', 'threads', 'pivot');
 		if($values && count(array_intersect_key(array_flip($facetOptions), $values))){
 			$facetParameters = array('facet' => array('key' => 'facet', 'value' => 'true'));
 
@@ -281,6 +281,19 @@ class QueryStringBuilder extends StaticObject {
 				}
 				$facetParameters['facetQueries'] = $facetQueries;
 			}
+
+			/*Facet Pivot Variables*/
+			if(isset($values['pivot'])){
+				$facetPivots = array();
+				foreach($values['pivot'] as $tag => $fields){
+					$facetPivots[] =array(
+						'key' => 'facet.pivot',
+						'value' => '{!key=' . $tag . '}:' . implode(',', $fields),
+					);
+				}
+				$facetParameters['facetPivots'] = $facetPivots;
+			}
+
 			if(isset($values['mincount'])){
 				$facetParameters['mincount'] = array(
 																				'key' => 'facet.mincount',
