@@ -565,6 +565,28 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical(json_encode($expected), json_encode($result));
 	}
 
+	public function testFacetPivot(){
+		$values = array(
+			'pivot' => array(
+				'pivot1' => array('field1', 'field2', 'field3'),
+				'pivot2' => array('foo', 'bar'),
+			)
+		);
+		$expected = array(
+			'facet' => array(
+				'key' => 'facet',
+				'value' => 'true',
+			),
+			'facetPivots' => array(
+				array('key' => 'facet.pivot', 'value' => '{!key=pivot1}:field1,field2,field3'),
+				array('key' => 'facet.pivot', 'value' => '{!key=pivot2}:foo,bar'),
+			)
+		);
+
+		$result = QueryStringBuilder::facetToString($values);
+		$this->assertIdentical(json_encode($expected), json_encode($result));
+	}
+
 }
 
 ?>
