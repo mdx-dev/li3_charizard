@@ -226,7 +226,7 @@ class QueryStringBuilder extends StaticObject {
 	 * @return array $facetParameters
 	 */
 	public static function facetToString($values){
-		$facetOptions = array('field', 'range', 'query', 'threads', 'pivot');
+		$facetOptions = array('field', 'range', 'query', 'threads', 'pivot', 'mincount', 'sort', 'limit');
 		if($values && count(array_intersect_key(array_flip($facetOptions), $values))){
 			$facetParameters = array('facet' => array('key' => 'facet', 'value' => 'true'));
 
@@ -300,6 +300,19 @@ class QueryStringBuilder extends StaticObject {
 																				'value' => $values['mincount'],
 																			);
 			}
+			if(isset($values['sort'])){
+				$facetParameters['sort'] = array(
+																				'key' => 'facet.sort',
+																				'value' => $values['sort'],
+																			);
+			}
+			if(isset($values['limit'])){
+				$facetParameters['limit'] = array(
+																				'key' => 'facet.limit',
+																				'value' => $values['limit'],
+																			);
+			}
+
 			return $facetParameters;
 		}
 	}
