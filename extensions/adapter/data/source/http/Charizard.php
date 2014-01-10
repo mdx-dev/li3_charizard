@@ -5,6 +5,7 @@ namespace li3_charizard\extensions\adapter\data\source\http;
 use lithium\data\model\QueryException;
 use lithium\data\source\Http;
 use lithium\core\Libraries;
+use lithium\util\String;
 
 class Charizard extends Http {
 
@@ -113,6 +114,43 @@ class Charizard extends Http {
 	}
 
 	/**
+	 * Allows for plain queries passed via the `rawQuery` query param. The query
+	 * can be a string template with fields that are filled from the `conditions`
+	 * query param.
+	 *
+	 * @param string $query
+	 * @return string A solr query URI.
+	 */
+	protected function rawQuery($query) {
+		if (!$rawQuery = $query->rawQuery()) return false;
+		$rawQuery = String::insert($rawQuery, (array) $query->conditions());
+		$source = $query->source();
+		return $this->_config['instance'] . '/' . $source['core'] . '/' . $rawQuery;
+	}
+
+	/**
+	 * Decodes JSON responses and performs minimal error handling.
+	 *
+	 * @param string $response
+	 * @return array Solr response
+	 */
+	protected function parseRaw($response) {
+		$parsed = json_decode($response, true);
+		if (!is_array($parsed) || empty($parsed['responseHeader'])) {
+			throw new QueryException('Failed to read Solr response: `' . var_export($response, true) . '`.');
+		}
+
+		$responseHeader = $parsed['responseHeader'];
+		if (!isset($responseHeader['status']) || $responseHeader['status'] !== 0) {
+			$msg = isset($parsed['error']['msg']) ? $parsed['error']['msg'] : '';
+			$code = isset($parsed['error']['code']) ? $parsed['error']['code'] : '';
+			throw new QueryException("Solr error: code=`{$code}` msg=`{$msg}`.");
+		}
+
+		return $parsed;
+	}
+
+	/**
 	 * Gets the data from the query builder and returns it.
 	 *
 	 * @param mixed $query
@@ -120,7 +158,14 @@ class Charizard extends Http {
 	 * @return DocumentSet
 	 */
 	public function read($query, array $options = array()) {
-		$response = $this->connection->get($this->path($query));
+		if ($query->rawQuery() && $path = $this->rawQuery($query)) {
+			$response = $this->connection->get($path);
+		} else {
+			$response = $this->connection->get($this->path($query));
+		}
+		if ($query->rawResponse()) {
+			return $this->parseRaw($response);
+		}
 		$parsed = $this->_parseResponse($query->model(), $response);
 		$entityOptions = $parsed['options'] + array(
 			'class' => 'set',

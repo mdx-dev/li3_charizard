@@ -188,6 +188,24 @@ EOD;
 		);
 	}
 
+	public function testRawQuery() {
+		$this->_createObjects();
+		$query = new Query(array(
+			'source'     => array('core' => 'testCore'),
+			'rawQuery'   => 'select?wt=json&q=*:*&wt=json&facet=true&facet.field={:fieldName}&facet.sort={:facetSort}&facet.limit={:limit}&facet.offset={:offset}&rows={:facetRows}',
+			'conditions' => array(
+				'fieldName' => 'a_field',
+				'facetSort' => 'a_field+desc',
+				'limit'     => '10',
+				'offset'    => '0',
+				'facetRows' => '0',
+			),
+		));
+		$expected = 'foo/testCore/select?wt=json&q=*:*&wt=json&facet=true&facet.field=a_field&facet.sort=a_field+desc&facet.limit=10&facet.offset=0&rows=0';
+		$path = $this->charizard->rawQuery($query);
+		$this->assertEqual($expected, $path);
+	}
+
 }
 
 ?>
