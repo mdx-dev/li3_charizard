@@ -161,7 +161,8 @@ class Charizard extends Http {
 		if ($query->rawQuery() && $path = $this->rawQuery($query)) {
 			$response = $this->connection->get($path);
 		} else {
-			$response = $this->connection->get($this->path($query));
+			$path = $this->path($query);
+			$response = $this->connection->get($path);
 		}
 		if ($query->rawResponse()) {
 			return $this->parseRaw($response);
@@ -170,6 +171,15 @@ class Charizard extends Http {
 		$entityOptions = $parsed['options'] + array(
 			'class' => 'set',
 		);
+		if (!empty($options['debug'])) {
+			header('Content-type: application/json');
+			echo json_encode(array(
+				'path' => urldecode($path),
+				'params' => $query->export($this),
+				'results' => $parsed['data'],
+			));
+			exit;
+		}
 		return $this->item($query->model(), $parsed['data'], $entityOptions);
 	}
 
