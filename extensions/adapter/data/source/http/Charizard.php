@@ -135,7 +135,7 @@ class Charizard extends Http {
 	 * @return array Solr response
 	 */
 	protected function parseRaw($response) {
-		$parsed = json_decode($response, true);
+		$parsed = is_array($response) ? $response : json_decode($response, true);
 		if (!is_array($parsed) || empty($parsed['responseHeader'])) {
 			throw new QueryException('Failed to read Solr response: `' . var_export($response, true) . '`.');
 		}
