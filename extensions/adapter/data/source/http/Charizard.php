@@ -237,8 +237,16 @@ class Charizard extends Http {
 			'type' => 'application/json',
 		);
 		$response = $this->connection->post($path, $data['payload'], $service_opts);
-		if (!isset($response['responseHeader']['status'])) return false;
-		if (0 !== $response['responseHeader']['status']) return false;
+
+		if (!is_array($response) || empty($response['responseHeader'])) {
+			throw new QueryException('Failed to read Solr response: `' . var_export($response, true) . '`.');
+		}
+		$responseHeader = $response['responseHeader'];
+		if (!isset($responseHeader['status']) || $responseHeader['status'] !== 0) {
+			$msg = isset($response['error']['msg']) ? $response['error']['msg'] : '';
+			$code = isset($response['error']['code']) ? $response['error']['code'] : '';
+			throw new QueryException("Solr error: code=`{$code}` msg=`{$msg}`.");
+		}
 		return true;
 	}
 
