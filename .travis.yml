@@ -6,11 +6,15 @@ php:
   - 5.5
 
 before_install:
+  - curl https://raw.github.com/moliware/travis-solr/master/travis-solr.sh | SOLR_PORT=8080 SOLR_VERSION=4.2.1 bash
   - cd ../
   - git clone git://github.com/UnionOfRAD/framework.git
   - mv li3_charizard/ framework/app/libraries/li3_charizard
   - cd framework
   - git submodule update --init --recursive
-  - cd app/libraries/li3_charizard
+  - cd libraries/lithium
+  - git remote set-url origin git://github.com/mdx-dev/lithium.git
+  - git fetch origin && git reset --hard origin/master
+  - cd ../../app/libraries/li3_charizard
 
 script: ../../../libraries/lithium/console/li3 test tests
