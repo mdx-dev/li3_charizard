@@ -172,9 +172,18 @@ class Charizard extends Http {
 			'class' => 'set',
 		);
 		if (!empty($options['debug'])) {
+			$full_url = 'http://'.$this->_config['host'].':'.$this->_config['port'].'/'.$path;
+			if (isset($this->_config['explain_host'])) {
+				$explain_url = $this->_config['explain_host'] . '/?debug_url=' . 
+												urlencode(str_replace('wt=json', 'wt=xml', $full_url));
+			} else {
+				$explain_url = $full_url . '&debugQuery=true';
+			}
+
 			header('Content-type: application/json');
 			echo json_encode(array(
-				'path' => urldecode($path),
+				'url' => urldecode($full_url),
+				'explain' => $explain_url,
 				'params' => $query->export($this),
 				'results' => $parsed['data'],
 			));
