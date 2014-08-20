@@ -4,8 +4,44 @@ namespace li3_charizard\extensions\adapter\data;
 
 use lithium\core\StaticObject;
 use BadMethodCallException;
+use InvalidArgumentException;
 
 class QueryStringBuilder extends StaticObject {
+
+	public static function solrJoinToString($value) {
+		$value += array(
+			'from' => null,
+			'fromIndex' => null,
+			'to' => null,
+		);
+		foreach (array('from', 'to') as $key) {
+			if (!is_string($value[$key]) || !strlen($value[$key])) {
+				$msg = "Charizard join expects a non-empty string for the `$key` param.";
+				throw new InvalidArgumentException($msg);
+			}
+		}
+		if (!is_null($value['fromIndex'])) {
+			if (!is_string($value['fromIndex']) || !strlen($value['fromIndex'])) {
+				$msg = 'Charizard join expects a non-empty string for the optional'
+					. ' `fromIndex` param.';
+				throw new InvalidArgumentException($msg);
+			}
+		}
+
+		$params = array(
+			"from={$value['from']}",
+			"to={$value['to']}",
+		);
+		if (!is_null($value['fromIndex'])) {
+			$params[] = "fromIndex={$value['fromIndex']}";
+		}
+		$localParam = '{!join ' . implode(' ', $params) . '}';
+
+		return array(
+			'key' => 'fq',
+			'value' => $localParam . '*:*',
+		);
+	}
 
 	public static function startToString($value) {
 		if ($value > 0) {

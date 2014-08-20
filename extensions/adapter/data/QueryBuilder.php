@@ -29,6 +29,7 @@ class QueryBuilder extends Object {
 		'facet',
 		'geo',
 		'rows',
+		'solrJoin'
 	);
 
 	protected $_autoConfig = array(
