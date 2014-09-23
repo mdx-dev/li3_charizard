@@ -203,7 +203,7 @@ class QueryStringBuilder extends StaticObject {
 		$filterFields = array();
 		if(isset($values['field'])){
 			foreach ($values['field'] as $key => $value) {
-				if (!$value) {
+				if (!isset($value) || $value === '') {
 					continue;
 				}
 				$filterFields[] = array(
