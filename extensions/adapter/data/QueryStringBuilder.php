@@ -77,9 +77,15 @@ class QueryStringBuilder extends StaticObject {
 				if($value == null){
 					$value = $key . ':' . $original_value;
 				}
+			} elseif ($key == 'FUNCTION' && !is_null($value)) {
+				return(array(
+					'key' => 'q',
+					'value' => $value,
+					));
 			} elseif ($value !== '' && !is_null($value)) {
 				$value = $key . ':' . $value;
 			}
+
 		}
 		return array(
 			'key' => 'q',

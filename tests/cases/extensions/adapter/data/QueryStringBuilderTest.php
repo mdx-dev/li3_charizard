@@ -63,6 +63,17 @@ class QueryStringBuilderTest extends Unit {
 		$this->assertIdentical($expected, QueryStringBuilder::selectToString($value));
 	}
 
+	public function testSelectWithFunctionQuery() {
+		$value = array(
+			'foo' => 'FUNCTION',
+			'baz' => '{!func}eff_foobar_sort',
+		);
+		$expected = array(
+			'key' => 'q',
+			'value' => '{!func}eff_foobar_sort',
+		);
+	}
+
 	public function testSortToStringSimple() {
 		$value = array(
 			'foo' => 'asc',
