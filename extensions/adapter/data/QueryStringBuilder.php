@@ -13,6 +13,7 @@ class QueryStringBuilder extends StaticObject {
 			'from' => null,
 			'fromIndex' => null,
 			'to' => null,
+			'query' => '*.*',
 		);
 		foreach (array('from', 'to') as $key) {
 			if (!is_string($value[$key]) || !strlen($value[$key])) {
@@ -39,7 +40,7 @@ class QueryStringBuilder extends StaticObject {
 
 		return array(
 			'key' => 'fq',
-			'value' => $localParam . '*:*',
+			'value' => $localParam . $value['query'],
 		);
 	}
 
